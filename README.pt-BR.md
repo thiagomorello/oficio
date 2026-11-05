@@ -106,7 +106,7 @@ da plataforma); ele não consegue abrir portas nem criar registros DNS por você
 | Render | [docs/pt-BR/deploy/render.md](docs/pt-BR/deploy/render.md) |
 | Fly.io | [docs/pt-BR/deploy/fly.md](docs/pt-BR/deploy/fly.md) |
 | Vercel | [docs/pt-BR/deploy/vercel.md](docs/pt-BR/deploy/vercel.md) (por que não se encaixa, e o que usar no lugar) |
-| Kubernetes | [docs/pt-BR/deploy/kubernetes.md](docs/pt-BR/deploy/kubernetes.md) |
+| Kubernetes (Helm chart) | [docs/pt-BR/deploy/kubernetes.md](docs/pt-BR/deploy/kubernetes.md) · chart em [deploy/helm/oficio](deploy/helm/oficio) |
 | LiveKit Cloud em vez de áudio/vídeo auto-hospedado | [docs/pt-BR/deploy/livekit-cloud.md](docs/pt-BR/deploy/livekit-cloud.md) |
 
 ## Documentação

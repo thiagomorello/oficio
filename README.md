@@ -106,7 +106,7 @@ platform's CLI); it cannot open ports or create DNS records for you unless you g
 | Render | [docs/deploy/render.md](docs/deploy/render.md) |
 | Fly.io | [docs/deploy/fly.md](docs/deploy/fly.md) |
 | Vercel | [docs/deploy/vercel.md](docs/deploy/vercel.md) (why it does not fit, and what to use instead) |
-| Kubernetes | [docs/deploy/kubernetes.md](docs/deploy/kubernetes.md) |
+| Kubernetes (Helm chart) | [docs/deploy/kubernetes.md](docs/deploy/kubernetes.md) · chart in [deploy/helm/oficio](deploy/helm/oficio) |
 | LiveKit Cloud instead of self-hosted audio/video | [docs/deploy/livekit-cloud.md](docs/deploy/livekit-cloud.md) |
 
 ## Documentation

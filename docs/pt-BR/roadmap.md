@@ -5,7 +5,7 @@ Para onde o Oficio provavelmente vai depois da 0.1. Esta é uma lista de direç�
 ## Escala e operação
 
 - **Escala horizontal.** Hoje o estado do escritório vive na memória de um processo ([por quê](architecture.md#por-que-exatamente-uma-réplica)). Mover presença, pertencimento a zonas e rate limiters para um armazenamento compartilhado (Redis pub/sub para a distribuição do tick, Redis ou MySQL para o estado) permitiria várias réplicas do app, deploys sem downtime e escritórios maiores. Este é o maior item arquitetural da lista.
-- **Helm chart.** Um chart para Kubernetes com o app de uma réplica, MySQL/LiveKit incluídos opcionais, Ingress com anotações de WebSocket e as portas de mídia do LiveKit via `hostNetwork`/NodePort, substituindo os manifestos escritos à mão do guia de Kubernetes.
+- **Publicação do Helm chart.** O chart existe ([entregue](#entregue-desta-lista)); o que falta é publicá-lo em um repositório de charts ou registro OCI a cada release, uma opção de `NetworkPolicy` e feedback de clusters reais.
 - **Mais métricas e logs estruturados.** Ocupação por zona, contagem de inscrições de A/V e saída de log em JSON para coletores de logs.
 
 ## Identidade e acesso
@@ -26,6 +26,7 @@ Para onde o Oficio provavelmente vai depois da 0.1. Esta é uma lista de direç�
 
 ## Entregue desta lista
 
+- **Helm chart** (não lançado, na `main`, `deploy/helm/oficio`): app de uma réplica com `Recreate`, MySQL e LiveKit incluídos opcionais, presets de Ingress com anotações de WebSocket para ingress-nginx e Traefik, portas de mídia do LiveKit via `hostNetwork` ou NodePort/LoadBalancer, LiveKit Cloud como alternativa, segredos mantidos entre upgrades ([guia](deploy/kubernetes.md)).
 - **Automação do TURN** (não lançado, na `main`): o overlay `docker-compose.turn.yml` habilita o TURN embutido do LiveKit sobre TLS com o certificado que o Caddy emite para o domínio do LiveKit, com um wrapper que espera pelo certificado no primeiro boot e duas opções de renovação ([como usar](livekit.md#turn-quando-e-como)). O TURN/TLS escuta na 5349 porque o Caddy é dono da 443; a 443 em si ainda exige um segundo IP ou um host separado.
 
 ## Não planejado

@@ -60,7 +60,7 @@ O campo `version` mostra o novo release e `ok` é `true`. Abra o escritório em 
 
 - **Stack do Portainer:** altere `OFICIO_VERSION` nas variáveis de ambiente da stack (ou a tag da imagem no editor) e clique em **Update the stack** com *Re-pull image* habilitado. No Swarm o serviço atualiza em `stop-first` (uma réplica) e faz rollback automaticamente se o healthcheck falhar por 30 s (`failure_action: rollback`).
 - **Railway / Render / Fly / DigitalOcean App Platform / Coolify / Dokploy:** altere a tag da imagem (ou faça o redeploy a partir do novo commit) na interface da plataforma; o app migra na inicialização da mesma forma. Veja os guias em `deploy/`.
-- **Kubernetes:** atualize a tag da imagem no Deployment; mantenha `replicas: 1` e `strategy: Recreate` para que dois pods do app nunca rodem ao mesmo tempo.
+- **Kubernetes:** com o Helm chart, `helm upgrade oficio deploy/helm/oficio -n oficio -f my-values.yaml --set image.tag=X.Y.Z` (o chart mantém `replicas: 1` e `strategy: Recreate` por você); com manifests crus, atualize a tag da imagem no Deployment e mantenha essas duas configurações para que dois pods do app nunca rodem ao mesmo tempo.
 
 ## Migrations durante uma atualização
 

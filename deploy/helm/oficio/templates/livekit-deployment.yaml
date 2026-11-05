@@ -1,0 +1,119 @@
+{{- if .Values.livekit.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "oficio.livekit.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+spec:
+  # One LiveKit without Redis is a single node; with hostNetwork two Pods could not share a node's ports anyway.
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "livekit") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "livekit") | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/livekit-configmap.yaml") . | sha256sum }}
+        {{- with .Values.livekit.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      {{- if .Values.livekit.hostNetwork }}
+      # Media ports bound directly on the node (LiveKit's documented Kubernetes model). Open rtc.tcpPort/tcp and
+      # rtc.udpPort/udp on the node's firewall. 7880 (signaling) is also bound on the node; keep it behind the Ingress
+      # and do not open it to the internet.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- end }}
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: livekit
+          image: {{ printf "%s:%s" .Values.livekit.image.repository .Values.livekit.image.tag }}
+          imagePullPolicy: {{ .Values.livekit.image.pullPolicy }}
+          args:
+            - --config
+            - /etc/livekit/livekit.yaml
+          env:
+            # The same pair the app uses, read from the app Secret; LIVEKIT_KEYS is expanded from them by the kubelet.
+            - name: LIVEKIT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oficio.secretName" . }}
+                  key: LIVEKIT_API_KEY
+            - name: LIVEKIT_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oficio.secretName" . }}
+                  key: LIVEKIT_API_SECRET
+            - name: LIVEKIT_KEYS
+              value: "$(LIVEKIT_API_KEY): $(LIVEKIT_API_SECRET)"
+          ports:
+            - name: http
+              containerPort: 7880
+              protocol: TCP
+            - name: rtc-tcp
+              containerPort: {{ int .Values.livekit.rtc.tcpPort }}
+              protocol: TCP
+            - name: rtc-udp
+              containerPort: {{ int .Values.livekit.rtc.udpPort }}
+              protocol: UDP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.livekit.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/livekit
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "oficio.livekit.fullname" . }}
+      {{- with .Values.livekit.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.livekit.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.livekit.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

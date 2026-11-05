@@ -1,0 +1,36 @@
+# Minimal install: MySQL inside the cluster (chart-managed StatefulSet) + LiveKit Cloud for audio/video.
+# Nothing but HTTPS has to reach the cluster, so it works on any managed Kubernetes with an Ingress controller.
+#
+#   helm install oficio deploy/helm/oficio -n oficio --create-namespace -f deploy/helm/oficio/examples/values-minimal.yaml
+#
+# Before installing, replace the host name and the LiveKit Cloud values. Secrets left empty (JWT, MySQL passwords,
+# metrics token) are generated on first install and kept on upgrades.
+
+ingress:
+  enabled: true
+  className: nginx
+  host: office.example.com
+  certManager:
+    clusterIssuer: letsencrypt
+
+office:
+  appName: Oficio
+  defaultLocale: en
+  timezone: UTC
+
+mysql:
+  enabled: true
+  persistence:
+    size: 10Gi
+
+livekit:
+  enabled: false
+  external:
+    # From the LiveKit Cloud project settings. internalUrl defaults to the same URL.
+    url: wss://your-project.livekit.cloud
+
+secrets:
+  # Paste the API key/secret of the same LiveKit Cloud project. Prefer secrets.existingSecret in production so they
+  # never live in a values file (see values-external.yaml).
+  livekitApiKey: APIxxxxxxxxxxxx
+  livekitApiSecret: replace-with-the-livekit-cloud-secret

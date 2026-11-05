@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "oficio.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  # Exactly one replica, always: the office state is in process memory (docs/architecture.md). Recreate stops the
+  # old Pod before the new one starts so two offices never run against the same database.
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "app") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "app") | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if not .Values.secrets.existingSecret }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "oficio.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: app
+          image: {{ include "oficio.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 4747
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "oficio.fullname" . }}
+            - secretRef:
+                name: {{ include "oficio.secretName" . }}
+            {{- with .Values.office.extraEnvFrom }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- $mysqlEnv := list }}
+          {{- if .Values.mysql.enabled }}
+          {{- $mysqlEnv = list (dict "name" "MYSQL_PASSWORD" "valueFrom" (dict "secretKeyRef" (dict "name" (include "oficio.mysql.secretName" .) "key" "mysql-password"))) }}
+          {{- else if and (not (include "oficio.mysql.externalUrlMode" .)) .Values.mysql.external.existingSecret }}
+          {{- $mysqlEnv = list (dict "name" "MYSQL_PASSWORD" "valueFrom" (dict "secretKeyRef" (dict "name" .Values.mysql.external.existingSecret "key" .Values.mysql.external.existingSecretKey))) }}
+          {{- end }}
+          {{- $env := concat $mysqlEnv (default list .Values.office.extraEnv) }}
+          {{- with $env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

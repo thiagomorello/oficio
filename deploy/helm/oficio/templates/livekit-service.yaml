@@ -1,0 +1,60 @@
+{{- if .Values.livekit.enabled }}
+# Signaling (HTTP/WebSocket on 7880), reached by the app (LIVEKIT_INTERNAL_URL) and by the LiveKit Ingress.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oficio.livekit.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "livekit") | nindent 4 }}
+  ports:
+    - name: http
+      port: 7880
+      targetPort: http
+      protocol: TCP
+{{- if not .Values.livekit.hostNetwork }}
+---
+# Media ports when the Pod is not on the host network. The node port (NodePort) or the forwarded port (LoadBalancer)
+# must equal the port LiveKit announces in ICE candidates, hence the 1:1 mapping below.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oficio.livekit.fullname" . }}-rtc
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+  {{- with .Values.livekit.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.livekit.service.type }}
+  externalTrafficPolicy: {{ .Values.livekit.service.externalTrafficPolicy }}
+  {{- if and (eq .Values.livekit.service.type "LoadBalancer") .Values.livekit.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.livekit.service.loadBalancerIP }}
+  {{- end }}
+  selector:
+    {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "livekit") | nindent 4 }}
+  ports:
+    - name: rtc-tcp
+      port: {{ int .Values.livekit.rtc.tcpPort }}
+      targetPort: rtc-tcp
+      protocol: TCP
+      {{- if eq .Values.livekit.service.type "NodePort" }}
+      nodePort: {{ int .Values.livekit.rtc.tcpPort }}
+      {{- end }}
+    - name: rtc-udp
+      port: {{ int .Values.livekit.rtc.udpPort }}
+      targetPort: rtc-udp
+      protocol: UDP
+      {{- if eq .Values.livekit.service.type "NodePort" }}
+      nodePort: {{ int .Values.livekit.rtc.udpPort }}
+      {{- end }}
+{{- end }}
+{{- end }}

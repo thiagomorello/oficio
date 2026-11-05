@@ -1,0 +1,72 @@
+# Production-style install: managed MySQL outside the cluster, LiveKit Cloud, Traefik as Ingress controller,
+# and a Secret you manage yourself (External Secrets, Sealed Secrets, kubectl...). No secret lives in this file.
+#
+#   kubectl -n oficio create secret generic oficio-secrets \
+#     --from-literal=OFFICE_JWT_SECRET="$(openssl rand -hex 32)" \
+#     --from-literal=LIVEKIT_API_KEY="API..." \
+#     --from-literal=LIVEKIT_API_SECRET="..." \
+#     --from-literal=METRICS_TOKEN="$(openssl rand -hex 24)" \
+#     --from-literal=SENDGRID_API_KEY="SG...."
+#   kubectl -n oficio create secret generic oficio-mysql-external --from-literal=mysql-password='...'
+#   helm install oficio deploy/helm/oficio -n oficio -f deploy/helm/oficio/examples/values-external.yaml
+#
+# The chart then creates no Secret at all; DATABASE_URL is assembled by the app from the MYSQL_* parts (user and
+# password URL-encoded for you) and MYSQL_SSL=required validates the database certificate.
+
+image:
+  tag: "0.1.0"
+
+ingress:
+  enabled: true
+  className: traefik
+  host: office.example.com
+  nginx:
+    enabled: false
+  traefik:
+    enabled: true
+    entrypoints: websecure
+  tls:
+    enabled: true
+    # Created by cert-manager through the Issuer below.
+    secretName: oficio-tls
+  certManager:
+    clusterIssuer: letsencrypt
+
+office:
+  appName: Acme Office
+  accentColor: "#ff6600"
+  signText: ACME
+  defaultLocale: pt-BR
+  timezone: America/Sao_Paulo
+  mailFrom: office@example.com
+
+secrets:
+  existingSecret: oficio-secrets
+
+mysql:
+  enabled: false
+  external:
+    host: mysql.example.internal
+    port: 3306
+    database: oficio
+    username: oficio
+    existingSecret: oficio-mysql-external
+    existingSecretKey: mysql-password
+    ssl: required
+
+livekit:
+  enabled: false
+  external:
+    url: wss://your-project.livekit.cloud
+
+metrics:
+  protect: true
+  serviceMonitor:
+    enabled: false
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    memory: 2Gi

@@ -74,3 +74,28 @@ jobs:
           docker compose -f docker-compose.dev.yml config -q
           docker compose -f deploy/portainer/stack.yml config -q
           docker compose -f deploy/portainer/stack-swarm.yml config -q
+
+  helm:
+    name: Helm chart lints and renders
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Lint
+        run: helm lint deploy/helm/oficio
+      - name: Lint and render each example values file
+        run: |
+          set -e
+          for f in deploy/helm/oficio/examples/*.yaml; do
+            echo "== $f"
+            helm lint deploy/helm/oficio -f "$f"
+            helm template oficio deploy/helm/oficio -n oficio -f "$f" > "/tmp/$(basename "$f" .yaml).rendered.yaml"
+          done
+          # LiveKit without hostNetwork (NodePort media Service), PDB and ServiceMonitor on.
+          helm template oficio deploy/helm/oficio -n oficio -f deploy/helm/oficio/examples/values-self-hosted.yaml \
+            --set livekit.hostNetwork=false --set livekit.rtc.tcpPort=30881 --set livekit.rtc.udpPort=30882 \
+            --set podDisruptionBudget.enabled=true --set metrics.serviceMonitor.enabled=true \
+            > /tmp/values-variant.rendered.yaml
+      - name: Validate the rendered manifests against the Kubernetes schemas
+        run: |
+          cat /tmp/*.rendered.yaml | docker run --rm -i ghcr.io/yannh/kubeconform:latest -strict -summary -skip ServiceMonitor
