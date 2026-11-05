@@ -1,12 +1,12 @@
 # Oficio: client build (Vite) + server build (esbuild); final image ships production dependencies only.
-FROM node:22.23.4-alpine AS builder
+FROM node:26.13.0-alpine AS builder
 WORKDIR /app
 COPY package*.json .npmrc ./
 RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build
 
-FROM node:22.23.4-alpine
+FROM node:26.13.0-alpine
 LABEL org.opencontainers.image.title="Oficio"       org.opencontainers.image.description="Open source self-hosted virtual office: pixel-art map, proximity audio/video with LiveKit, chat and meeting rooms."       org.opencontainers.image.source="https://github.com/thiagomorello/oficio"       org.opencontainers.image.licenses="MIT"
 WORKDIR /app
 COPY package*.json .npmrc ./
