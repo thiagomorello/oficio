@@ -5,7 +5,6 @@ Para onde o Oficio provavelmente vai depois da 0.1. Esta é uma lista de direç�
 ## Escala e operação
 
 - **Escala horizontal.** Hoje o estado do escritório vive na memória de um processo ([por quê](architecture.md#por-que-exatamente-uma-réplica)). Mover presença, pertencimento a zonas e rate limiters para um armazenamento compartilhado (Redis pub/sub para a distribuição do tick, Redis ou MySQL para o estado) permitiria várias réplicas do app, deploys sem downtime e escritórios maiores. Este é o maior item arquitetural da lista.
-- **TLS do banco com uma CA personalizada.** `?ssl=true` / `MYSQL_SSL` já cobrem provedores com CAs públicas; adicionar uma forma de apontar para um bundle de CA privada ([detalhes](database.md#tls)).
 - **Helm chart.** Um chart para Kubernetes com o app de uma réplica, MySQL/LiveKit incluídos opcionais, Ingress com anotações de WebSocket e as portas de mídia do LiveKit via `hostNetwork`/NodePort, substituindo os manifestos escritos à mão do guia de Kubernetes.
 - **Automação do TURN.** Uma flag opcional na stack compose que habilita o TURN embutido do LiveKit com certificados emitidos pelo Caddy, para que redes que só permitem a 443 funcionem sem configuração manual ([passos manuais hoje](livekit.md#turn-quando-e-como)).
 - **Mais métricas e logs estruturados.** Ocupação por zona, contagem de inscrições de A/V e saída de log em JSON para coletores de logs.

@@ -54,6 +54,7 @@ Details and tips in [Branding](#branding-details) below.
 | `MYSQL_PASSWORD` | string | empty | yes with compose | Part of the alternative form; also the password of the compose MySQL user and the one baked into the compose `DATABASE_URL`. Keep it URL-safe (hex) because it goes into a URL. |
 | `MYSQL_DATABASE` | string | `oficio` | no | Part of the alternative form; also the database the compose MySQL container creates. |
 | `MYSQL_SSL` | `required` \| `skip-verify` \| empty | empty | no | TLS to the database (works with both forms). `required` validates the server certificate; `skip-verify` encrypts without validating. Same as `?ssl=true` / `?ssl=skip-verify` in `DATABASE_URL`. |
+| `MYSQL_SSL_CA` | file path | empty | no | PEM bundle with the CA that signed the database certificate, for private or corporate CAs. Implies TLS with validation. Same as `?sslca=/path` in `DATABASE_URL`. See [Database → TLS](database.md#tls). |
 | `MYSQL_ROOT_PASSWORD` | string | — | yes with compose | Root password of the bundled MySQL container, used on first boot and by `scripts/backup.sh` / `restore.sh`. Not read by the app. |
 | `MYSQL_BUFFER_POOL` | size | `256M` | no | compose only: `innodb-buffer-pool-size` of the bundled MySQL. Raise to `512M`–`1G` on hosts with 8 GB or more. |
 

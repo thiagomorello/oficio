@@ -1,9 +1,12 @@
 // Camada MySQL sem servidor: migrações, pool config, health e SQL das repos contra um Db roteirizado.
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createDbHealth } from '../db/health';
 import { runMigrations, splitStatements } from '../db/migrate';
 import { MIGRATIONS } from '../db/migrations/index';
-import { dbConfigFromEnv, poolOptions, type Db, type ExecResult } from '../db/pool';
+import { dbConfigFromEnv, poolOptions, readCaBundle, type Db, type ExecResult } from '../db/pool';
 import { createMysqlRepos } from '../db/repos/index';
 
 interface Call { sql: string; params: unknown[] }
@@ -87,6 +90,25 @@ describe('pool config', () => {
     expect(poolOptions({ url: 'mysql://u:p@h/db?ssl=false' }).ssl).toBeUndefined();
     expect(poolOptions({ url: 'mysql://u:p@h/db', ssl: 'required' }).ssl).toEqual({ rejectUnauthorized: true });
     expect(poolOptions({ host: 'h', ssl: 'skip-verify' }).ssl).toEqual({ rejectUnauthorized: false });
+  });
+
+  it('CA bundle: MYSQL_SSL_CA / ?sslca= implica TLS validado; arquivo ausente ou não-PEM falha no boot', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'oficio-ca-'));
+    const ca = join(dir, 'ca.pem');
+    const pem = '-----BEGIN CERTIFICATE-----\nMIIBfake\n-----END CERTIFICATE-----\n';
+    writeFileSync(ca, pem);
+    expect(readCaBundle(ca)).toBe(pem);
+    expect(poolOptions({ host: 'h', sslCa: ca }).ssl).toEqual({ ca: pem, rejectUnauthorized: true });
+    expect(poolOptions({ url: 'mysql://u:p@h/db', sslCa: ca }).ssl).toEqual({ ca: pem, rejectUnauthorized: true });
+    expect(poolOptions({ url: `mysql://u:p@h/db?sslca=${encodeURIComponent(ca)}` }).ssl).toEqual({ ca: pem, rejectUnauthorized: true });
+    expect(poolOptions({ host: 'h', ssl: 'skip-verify', sslCa: ca }).ssl).toEqual({ ca: pem, rejectUnauthorized: false });
+    expect(dbConfigFromEnv({ DATABASE_URL: 'mysql://a@h/d', MYSQL_SSL_CA: ` ${ca} ` })).toMatchObject({ sslCa: ca });
+    expect(dbConfigFromEnv({ MYSQL_HOST: 'h', MYSQL_SSL_CA: ca })).toMatchObject({ host: 'h', sslCa: ca });
+    expect(dbConfigFromEnv({ MYSQL_HOST: 'h' })).toMatchObject({ sslCa: undefined });
+    expect(() => poolOptions({ host: 'h', sslCa: join(dir, 'missing.pem') })).toThrow(/MYSQL_SSL_CA: cannot read/);
+    const notPem = join(dir, 'x.txt');
+    writeFileSync(notPem, 'hello');
+    expect(() => readCaBundle(notPem)).toThrow(/does not contain a PEM certificate/);
   });
 
   it('dbConfigFromEnv: DATABASE_URL, MYSQL_* ou null', () => {

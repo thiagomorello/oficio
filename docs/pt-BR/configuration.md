@@ -54,6 +54,7 @@ Detalhes e dicas em [Detalhes da marca](#detalhes-da-marca) abaixo.
 | `MYSQL_PASSWORD` | string | vazio | sim com compose | Parte da forma alternativa; também a senha do usuário MySQL do compose e a que vai embutida na `DATABASE_URL` do compose. Mantenha-a segura para URL (hex) porque ela entra em uma URL. |
 | `MYSQL_DATABASE` | string | `oficio` | não | Parte da forma alternativa; também o banco que o container MySQL do compose cria. |
 | `MYSQL_SSL` | `required` \| `skip-verify` \| vazio | vazio | não | TLS até o banco (funciona com as duas formas). `required` valida o certificado do servidor; `skip-verify` criptografa sem validar. O mesmo que `?ssl=true` / `?ssl=skip-verify` na `DATABASE_URL`. |
+| `MYSQL_SSL_CA` | caminho de arquivo | vazio | não | Bundle PEM com a CA que assinou o certificado do banco, para CAs privadas ou corporativas. Implica TLS com validação. O mesmo que `?sslca=/caminho` na `DATABASE_URL`. Veja [Banco de dados → TLS](database.md#tls). |
 | `MYSQL_ROOT_PASSWORD` | string | — | sim com compose | Senha de root do container MySQL incluído, usada na primeira inicialização e por `scripts/backup.sh` / `restore.sh`. Não é lida pelo app. |
 | `MYSQL_BUFFER_POOL` | tamanho | `256M` | não | só compose: `innodb-buffer-pool-size` do MySQL incluído. Aumente para `512M`–`1G` em hosts com 8 GB ou mais. |
 

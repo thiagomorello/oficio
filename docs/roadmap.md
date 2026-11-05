@@ -5,7 +5,6 @@ Where Oficio is likely to go after 0.1. This is a list of directions the maintai
 ## Scaling and operations
 
 - **Horizontal scaling.** Today the office state lives in the memory of one process ([why](architecture.md#why-exactly-one-replica)). Moving presence, zone membership and rate limiters to a shared store (Redis pub/sub for the tick fan-out, Redis or MySQL for state) would allow several app replicas, zero-downtime deploys and larger offices. This is the biggest architectural item on the list.
-- **Database TLS with a custom CA.** `?ssl=true` / `MYSQL_SSL` already cover providers with public CAs; add a way to point at a private CA bundle ([details](database.md#tls)).
 - **Helm chart.** A chart for Kubernetes with the one-replica app, optional bundled MySQL/LiveKit, Ingress with WebSocket annotations and the LiveKit `hostNetwork`/NodePort media ports, replacing the hand-written manifests in the Kubernetes guide.
 - **TURN automation.** An opt-in flag in the compose stack that enables LiveKit's embedded TURN with certificates issued by Caddy, so networks that only allow 443 work without manual configuration ([manual steps today](livekit.md#turn-when-and-how)).
 - **More metrics and structured logs.** Per-zone occupancy, A/V subscription counts and JSON log output for log shippers.

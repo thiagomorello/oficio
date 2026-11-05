@@ -84,7 +84,26 @@ Por padrão o app abre conexões sem criptografia, o que é adequado para o cont
 - acrescente `?ssl=true` à `DATABASE_URL`: `mysql://user:pass@host:3306/oficio?ssl=true` (`sslmode=required` também é aceito), ou
 - defina `MYSQL_SSL=required` (funciona tanto com `DATABASE_URL` quanto com a forma `MYSQL_*`).
 
-Com `required` o certificado do servidor é validado contra o bundle de CAs do sistema do container, que cobre todos os grandes provedores (DigitalOcean, Aiven, PlanetScale/TiDB, o proxy público do Railway). Para uma CA privada ou um ambiente de teste você pode usar `?ssl=skip-verify` / `MYSQL_SSL=skip-verify`: a conexão é criptografada, mas o certificado não é verificado. `ssl=false`, `0` ou um valor vazio desabilita o TLS. Arquivos de CA personalizados ainda não são suportados ([roadmap](roadmap.md)).
+Com `required` o certificado do servidor é validado contra o bundle de CAs do sistema do container, que cobre todos os grandes provedores (DigitalOcean, Aiven, PlanetScale/TiDB, o proxy público do Railway). `ssl=false`, `0` ou um valor vazio desabilita o TLS.
+
+**CA privada ou corporativa.** Quando o certificado do banco é assinado por uma CA que não está no bundle do sistema (um MySQL próprio, uma PKI corporativa, alguns provedores de nuvem que entregam um `ca.pem` para baixar), aponte o app para o bundle PEM em vez de desligar a validação:
+
+```ini
+MYSQL_SSL_CA=/certs/mysql-ca.pem        # ou DATABASE_URL=mysql://...?sslca=/certs/mysql-ca.pem
+```
+
+O arquivo pode conter um ou vários certificados (uma cadeia). Definir essa variável implica TLS com validação completa, então `MYSQL_SSL` pode ficar vazia. Com a stack do compose, coloque o arquivo ao lado do `.env` e monte-o no container do app por um `docker-compose.override.yml`:
+
+```yaml
+services:
+  app:
+    volumes:
+      - ./certs/mysql-ca.pem:/certs/mysql-ca.pem:ro
+```
+
+O app se recusa a iniciar se o arquivo estiver faltando ou não for um certificado PEM, então um erro de digitação aparece no boot em vez de virar um fallback silencioso.
+
+**Último recurso.** `?ssl=skip-verify` / `MYSQL_SSL=skip-verify` criptografa a conexão, mas não verifica o certificado; use só temporariamente enquanto obtém o arquivo da CA.
 
 ## Migrations
 
