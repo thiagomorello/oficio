@@ -5,6 +5,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- `AGENTS.md` (and `CLAUDE.md`) with a production deployment runbook and coding rules for AI coding agents; README section explaining how to use it.
+
+### Fixed
+- CI: the Docker smoke test now loads the built image into the daemon before running it.
+
 ## [0.1.0] - 2026-11-04
 
 First public release.

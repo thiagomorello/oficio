@@ -71,6 +71,28 @@ docker compose up -d                     # app + MySQL + LiveKit + Caddy (automa
 Open `https://office.example.com`, sign in with the temporary password printed by the last command, build your
 avatar and walk in. Step-by-step with screenshots: [docs/quickstart.md](docs/quickstart.md).
 
+## Deploy with an AI coding agent
+
+Oficio ships with an [AGENTS.md](AGENTS.md) runbook written for coding agents (Claude Code, Codex, Cursor and
+similar). It tells the agent what to ask you first, which guide to follow for each platform, the exact commands,
+the checks after each step and the guardrails (never commit `.env`, never demo mode in production, exactly one app
+replica, pin the image version). Claude Code picks it up automatically through [CLAUDE.md](CLAUDE.md); Codex reads
+`AGENTS.md` natively.
+
+Open your agent on the server (or on a machine with SSH access to it) and paste something like:
+
+```text
+Deploy Oficio (https://github.com/thiagomorello/oficio) to production on this server following AGENTS.md.
+Domains: office.example.com and livekit.example.com (DNS already points here). ACME e-mail: you@example.com.
+Public IP: run `curl -4 ifconfig.me`. App name "Acme Office", accent color #ff6600, default language en.
+First admin: you@example.com, "Your Name". Use the self-hosted LiveKit from docker-compose.yml.
+Pin release v0.1.0. Stop and ask me before any destructive command, and give me the temporary admin password only once.
+```
+
+The same runbook covers Portainer, Coolify, Dokploy, Railway, Render, Fly.io and Kubernetes by pointing the agent
+at the right guide in [docs/deploy/](docs/deploy/). The agent needs shell access to the target (SSH or the
+platform's CLI); it cannot open ports or create DNS records for you unless you give it those credentials.
+
 ## Install guides
 
 | Where | Guide |

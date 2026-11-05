@@ -71,6 +71,28 @@ docker compose up -d                     # app + MySQL + LiveKit + Caddy (automa
 Abra `https://office.example.com`, entre com a senha temporária impressa pelo último comando, monte o seu
 avatar e entre no escritório. Passo a passo com capturas de tela: [docs/pt-BR/quickstart.md](docs/pt-BR/quickstart.md).
 
+## Deploy com um agente de IA
+
+O Oficio traz um runbook em [AGENTS.md](AGENTS.md) escrito para agentes de código (Claude Code, Codex, Cursor e
+similares). Ele diz ao agente o que perguntar a você antes de começar, qual guia seguir em cada plataforma, os
+comandos exatos, as verificações após cada passo e as regras de segurança (nunca commitar `.env`, nunca modo demo em
+produção, exatamente uma réplica do app, fixar a versão da imagem). O Claude Code lê o arquivo automaticamente via
+[CLAUDE.md](CLAUDE.md); o Codex lê `AGENTS.md` nativamente.
+
+Abra o agente no servidor (ou numa máquina com acesso SSH a ele) e cole algo como:
+
+```text
+Faça o deploy do Oficio (https://github.com/thiagomorello/oficio) em produção neste servidor seguindo o AGENTS.md.
+Domínios: office.example.com e livekit.example.com (o DNS já aponta para aqui). E-mail ACME: voce@example.com.
+IP público: rode `curl -4 ifconfig.me`. Nome do app "Acme Office", cor de destaque #ff6600, idioma padrão pt-BR.
+Primeiro admin: voce@example.com, "Seu Nome". Use o LiveKit auto-hospedado do docker-compose.yml.
+Fixe a release v0.1.0. Pare e me pergunte antes de qualquer comando destrutivo e me entregue a senha temporária do admin só uma vez.
+```
+
+O mesmo runbook cobre Portainer, Coolify, Dokploy, Railway, Render, Fly.io e Kubernetes apontando o agente para o
+guia certo em [docs/pt-BR/deploy/](docs/pt-BR/deploy/). O agente precisa de acesso ao shell do destino (SSH ou a CLI
+da plataforma); ele não consegue abrir portas nem criar registros DNS por você a menos que receba essas credenciais.
+
 ## Guias de instalação
 
 | Onde | Guia |
