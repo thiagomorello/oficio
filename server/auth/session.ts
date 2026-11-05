@@ -142,7 +142,8 @@ export function createSession({ config, repos, secret, now = Date.now }: Session
   return svc;
 }
 
-function appendCookie(res: ServerResponse, value: string): void {
+/** Acrescenta um Set-Cookie sem apagar os já definidos na resposta. */
+export function appendCookie(res: ServerResponse, value: string): void {
   const prev = res.getHeader('Set-Cookie');
   res.setHeader('Set-Cookie', prev === undefined ? value : [...(Array.isArray(prev) ? prev : [String(prev)]), value]);
 }

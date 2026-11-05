@@ -17,7 +17,7 @@ interface AdminUser {
   roleName: string | null;
   isAdmin: boolean;
   status: 'active' | 'disabled';
-  source: 'imported' | 'local';
+  source: 'imported' | 'local' | 'sso';
   lastSeen: string | null;
   hasAvatar: boolean;
   deskId: string | null;
@@ -224,7 +224,7 @@ function mountUsers(): HTMLElement {
         cell(cols.email, u.email),
         cell(cols.role, u.roleName ?? '–'),
         cell(cols.status, h('span', { class: `of-badge ${u.status === 'active' ? 'of-badge--success' : 'of-badge--danger'}`, text: u.status === 'active' ? t('admin.status.active') : t('admin.status.disabled') })),
-        cell(cols.source, h('span', { class: `of-badge ${u.source === 'imported' ? 'of-badge--blue' : 'of-badge--gray'}`, text: u.source === 'imported' ? t('admin.source.imported') : t('admin.source.local') })),
+        cell(cols.source, h('span', { class: `of-badge ${u.source === 'sso' ? 'of-badge--purple' : u.source === 'imported' ? 'of-badge--blue' : 'of-badge--gray'}`, text: u.source === 'sso' ? t('admin.source.sso') : u.source === 'imported' ? t('admin.source.imported') : t('admin.source.local') })),
         cell(cols.lastSeen, u.lastSeen ? relativeTime(Date.parse(u.lastSeen), now) : t('admin.never')),
         cell(cols.desk, u.deskId ?? '–'),
         cell('', actions),

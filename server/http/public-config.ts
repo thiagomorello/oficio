@@ -2,8 +2,15 @@
 import { SUPPORTED_LOCALES, type PublicConfig } from '../../shared/branding';
 import type { ServerConfig } from '../config';
 
-export function publicConfig(config: Pick<ServerConfig, 'branding' | 'defaultLocale' | 'version'>): PublicConfig {
-  return { ...config.branding, defaultLocale: config.defaultLocale, locales: SUPPORTED_LOCALES, version: config.version };
+export function publicConfig(config: Pick<ServerConfig, 'branding' | 'defaultLocale' | 'version' | 'oidc'>): PublicConfig {
+  return {
+    ...config.branding,
+    defaultLocale: config.defaultLocale,
+    locales: SUPPORTED_LOCALES,
+    version: config.version,
+    // Só o que a página de login precisa; issuer, client id e secret nunca saem daqui.
+    oidc: { enabled: config.oidc.enabled, label: config.oidc.enabled ? config.oidc.label : '', passwordLogin: config.oidc.passwordLogin },
+  };
 }
 
 export interface WebManifest {

@@ -17,6 +17,29 @@ export function safeNext(raw: string | null): string {
 }
 const next = safeNext(params.get('next'));
 const resetToken = params.get('reset');
+/** `?error=<código>` vindo do callback do login único; fica na tela até a próxima tentativa. */
+let ssoError: string | null = params.get('error');
+if (ssoError) history.replaceState(null, '', `/login${next !== '/' ? `?next=${encodeURIComponent(next)}` : ''}`);
+
+const SSO_ERROR_KEYS = {
+  oidc_state: 'login.sso.error.oidc_state',
+  oidc_denied: 'login.sso.error.oidc_denied',
+  oidc_failed: 'login.sso.error.oidc_failed',
+  oidc_unavailable: 'login.sso.error.oidc_unavailable',
+  oidc_no_email: 'login.sso.error.oidc_no_email',
+  oidc_email_unverified: 'login.sso.error.oidc_email_unverified',
+  oidc_domain: 'login.sso.error.oidc_domain',
+  oidc_no_account: 'login.sso.error.oidc_no_account',
+  oidc_disabled: 'login.sso.error.oidc_disabled',
+  oidc_rate_limited: 'login.sso.error.oidc_rate_limited',
+  oidc_not_configured: 'login.sso.error.oidc_not_configured',
+} as const;
+
+/** Texto traduzido de um código de erro do SSO; códigos desconhecidos caem no genérico. */
+export function ssoErrorText(code: string): string {
+  const key = (SSO_ERROR_KEYS as Record<string, (typeof SSO_ERROR_KEYS)[keyof typeof SSO_ERROR_KEYS]>)[code] ?? SSO_ERROR_KEYS.oidc_failed;
+  return t(key);
+}
 
 const root = document.getElementById('app');
 if (!root) throw new Error('#app ausente');
@@ -60,8 +83,10 @@ function render(view: View, notice?: string): void {
   const links = h('div', { class: 'login-links' });
   const link = (text: string, to: View): HTMLElement => h('button', { class: 'of-btn of-btn--transparent', type: 'button', text, on: { click: () => draw(to) } });
 
+  const oidc = branding().oidc;
+  const passwordForm = view !== 'login' || !oidc.enabled || oidc.passwordLogin;
   const titles: Record<View, [string, string]> = {
-    login: [t('login.title.login'), t('login.sub.login')],
+    login: [t('login.title.login'), passwordForm ? t('login.sub.login') : t('login.sub.sso')],
     forgot: [t('login.title.forgot'), t('login.sub.forgot')],
     reset: [t('login.title.reset'), t('login.sub.reset')],
     change: [t('login.title.change'), t('login.sub.change')],
@@ -70,11 +95,25 @@ function render(view: View, notice?: string): void {
   setBusy(false, label);
 
   let run: () => Promise<void>;
+  let sso: HTMLElement | null = null;
   if (view === 'login') {
+    if (oidc.enabled) {
+      // Botão do login único: navegação simples para o início do fluxo (o servidor redireciona ao provedor).
+      const start = `/api/auth/oidc/start${next !== '/' ? `?next=${encodeURIComponent(next)}` : ''}`;
+      sso = h(
+        'div',
+        { class: 'login-sso' },
+        h('a', { class: 'of-btn of-btn--lg login-sso-btn ' + (passwordForm ? 'of-btn--secondary' : 'of-btn--primary'), text: t('login.sso.continueWith', { label: oidc.label }), attrs: { href: start, rel: 'nofollow' }, on: { click: () => (ssoError = null) } }),
+        passwordForm ? h('div', { class: 'login-divider', text: t('login.sso.or') }) : null,
+      );
+    }
+    if (ssoError) error.textContent = ssoErrorText(ssoError);
     const email = field('email', t('login.field.email'), 'email', 'username', lastEmail);
     const pw = field('password', t('login.field.password'), 'password', 'current-password');
-    form.append(email.wrap, pw.wrap);
-    links.append(link(t('login.link.forgot'), 'forgot'));
+    if (passwordForm) {
+      form.append(email.wrap, pw.wrap);
+      links.append(link(t('login.link.forgot'), 'forgot'));
+    }
     run = async () => {
       lastEmail = email.input.value.trim();
       if (!lastEmail || !pw.input.value) throw new Error(t('login.error.emailAndPassword'));
@@ -111,10 +150,11 @@ function render(view: View, notice?: string): void {
     };
   }
 
-  form.append(error, submit);
+  if (passwordForm) form.append(error, submit);
   form.addEventListener('submit', (ev) => {
     ev.preventDefault(); // Enter dentro de um campo dispara submit
     if (submit.disabled) return;
+    ssoError = null;
     error.textContent = '';
     setBusy(true, label);
     run().then(
@@ -135,7 +175,8 @@ function render(view: View, notice?: string): void {
       h('h1', { class: 'login-title', text: title }),
       h('p', { class: 'login-sub', text: sub }),
       notice ? h('p', { class: 'login-ok', role: 'status', text: notice }) : null,
-      form,
+      sso,
+      passwordForm ? form : error,
       links,
       h('div', { class: 'login-footer' }, languagePicker()),
     ),

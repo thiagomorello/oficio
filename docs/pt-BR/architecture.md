@@ -77,6 +77,7 @@ Toda requisição HTTP passa pelo mesmo pipeline em `app-factory.ts`:
 - Um pequeno cache LRU (500 entradas, 5 minutos) evita uma leitura no banco a cada requisição; usuários conectados são revalidados periodicamente contra o banco.
 - **Rate limits** (em memória, janela deslizante, 10 tentativas por 10 minutos): falhas de login por `IP|email`; pedidos de `forgot` por IP (toda requisição conta); trocas de senha por usuário. Quem é bloqueado recebe `429` com `Retry-After`. O IP do cliente vem de `X-Forwarded-For` somente quando `TRUST_PROXY=1`.
 - **Redefinição de senha**: `forgot` cria um token aleatório, armazena somente o seu SHA-256 (`password_tokens`, tipo `reset`, 1 hora, uso único) e envia por e-mail `OFFICE_PUBLIC_URL/login?reset=<token>&lang=<locale>`. Sem mailer o endpoint responde `{ok: true, manual: true}` e a interface orienta a pessoa a procurar um administrador. Senhas precisam ter pelo menos 8 caracteres e ser diferentes do e-mail.
+- **Login único (OIDC)**: `GET /api/auth/oidc/start` guarda `state`, `nonce` e o verificador PKCE num cookie assinado de 10 minutos (`office_oidc`) e redireciona ao provedor; `GET /api/auth/oidc/callback` os valida, troca o código com o `openid-client`, encontra a conta por `external_id = oidc:<issuer>|<sub>` ou a vincula/cria pelo e-mail, aplica o mapeamento da claim de admin e emite o mesmo cookie `office_session`. Os metadados do provedor são descobertos sob demanda e guardados em cache. Detalhes em [Login único](sso.md).
 
 ## Protocolo WebSocket
 

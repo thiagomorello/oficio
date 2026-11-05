@@ -192,7 +192,7 @@ The report is a table `action / email / note` followed by totals; hashes are nev
 4. Re-running the same file is safe: existing `external_id`s are updated, nothing is duplicated. That makes a nightly sync from an HR export a reasonable setup.
 5. Remove the file from `/tmp` afterwards if it contained plain passwords (`docker compose exec app rm /tmp/team.json`; `/tmp` is a tmpfs and is also cleared on restart).
 
-Imported users appear with source `imported` in the admin list. Their first login uses the password you imported; they are **not** forced to change it unless you reset it.
+Imported users appear with source `imported` in the admin list. Their first login uses the password you imported; they are **not** forced to change it unless you reset it. Accounts that signed in through [single sign-on](sso.md) show the source `SSO`; resetting their password works the same way and lets them use the password form when it is enabled.
 
 ## Routine checklist
 

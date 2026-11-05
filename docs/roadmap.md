@@ -10,7 +10,7 @@ Where Oficio is likely to go after 0.1. This is a list of directions the maintai
 
 ## Identity and access
 
-- **SSO / OIDC.** Sign in with an identity provider (Google Workspace, Microsoft Entra ID, Keycloak, Authentik…) via OpenID Connect, with just-in-time account creation and group-to-admin mapping, next to the existing e-mail/password accounts and the `import-json` sync.
+- **SSO / OIDC.** Shipped (unreleased): sign in with an OpenID Connect provider (Google Workspace, Microsoft Entra ID, Keycloak, Authentik…), with just-in-time account creation, e-mail linking and group-to-admin mapping, next to e-mail/password accounts and the `import-json` sync. See [Single sign-on](sso.md). Possible follow-ups: several providers at once, re-evaluating group membership on every sign-in (including demotion), unlinking an account from the admin panel, SCIM provisioning.
 - **Session management for admins.** See and revoke a user's active sessions; configurable session lifetime.
 
 ## Languages

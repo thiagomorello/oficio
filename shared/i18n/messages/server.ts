@@ -40,6 +40,8 @@ export const server = defineMessages('server', {
     'auth.resetLinkInvalid': 'Invalid or expired link. Request a new one.',
     'auth.requestNewLink': '{reason}. Request a new link.',
     'auth.currentPasswordWrong': 'Current password is incorrect',
+    'auth.passwordLoginDisabled': 'Password sign-in is disabled. Use single sign-on.',
+    'auth.oidcNotConfigured': 'single sign-on not configured',
 
     // ---- /api/me
     'me.appearanceMissing': 'appearance missing',
@@ -154,6 +156,8 @@ export const server = defineMessages('server', {
     'auth.resetLinkInvalid': 'Link inválido ou expirado. Peça um novo.',
     'auth.requestNewLink': '{reason}. Peça um novo link.',
     'auth.currentPasswordWrong': 'Senha atual incorreta',
+    'auth.passwordLoginDisabled': 'O login por senha está desativado. Use o login único.',
+    'auth.oidcNotConfigured': 'login único não configurado',
 
     'me.appearanceMissing': 'aparência ausente',
     'me.invalidName': 'Nome inválido: {detail}',
@@ -261,6 +265,8 @@ export const server = defineMessages('server', {
     'auth.resetLinkInvalid': 'Enlace inválido o expirado. Solicita uno nuevo.',
     'auth.requestNewLink': '{reason}. Solicita un nuevo enlace.',
     'auth.currentPasswordWrong': 'La contraseña actual es incorrecta',
+    'auth.passwordLoginDisabled': 'El inicio de sesión con contraseña está desactivado. Usa el inicio de sesión único.',
+    'auth.oidcNotConfigured': 'inicio de sesión único no configurado',
 
     'me.appearanceMissing': 'falta la apariencia',
     'me.invalidName': 'Nombre inválido: {detail}',

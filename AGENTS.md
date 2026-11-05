@@ -53,6 +53,10 @@ a smoke test of the image and `docker compose config` on every compose file.
 7. **LiveKit**: self-hosted in the stack (default on a VPS) or [LiveKit Cloud](docs/deploy/livekit-cloud.md)
    (required on PaaS without UDP). For Cloud you need its `wss://` URL, API key and API secret from the human.
 8. **Optional**: SendGrid API key and sender address for invite/reset e-mails; S3-compatible bucket for backups.
+9. **Optional, single sign-on**: the OpenID Connect issuer URL, client ID and client secret of an application the human
+   registered at their identity provider with redirect URI `https://<OFFICE_DOMAIN>/api/auth/oidc/callback`, plus the
+   allowed e-mail domains and the group/claim that should map to administrators ([docs/sso.md](docs/sso.md)). Never ask
+   for or print the secret in chat.
 
 Check the requirements with the human before touching the server: [docs/requirements.md](docs/requirements.md)
 (2 vCPU / 4 GB for a small team, ports 80, 443/tcp, 7881/tcp and 7882/udp open, Docker 24+ with Compose v2.23+).

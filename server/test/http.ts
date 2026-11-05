@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { createApp, type App } from '../app-factory';
 import { hash } from '../auth/password';
 import type { Mailer, MailMessage } from '../auth/mailer';
-import type { ServerConfig } from '../config';
+import { parseOidcConfig, type ServerConfig } from '../config';
 import { DEFAULT_BRANDING } from '../../shared/branding';
 import type { Repos } from '../db/repos/index';
 import type { UserRow } from '../db/types';
@@ -27,6 +27,7 @@ export function testConfig(over: Partial<ServerConfig> = {}): ServerConfig {
     rootDir: process.cwd(),
     version: 'test',
     warnings: [],
+    oidc: parseOidcConfig({}, []),
     ...over,
   };
 }

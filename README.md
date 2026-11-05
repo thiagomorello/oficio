@@ -39,6 +39,8 @@ name, logo and colors.
 - **Chat with scopes.** Everyone, current room, or people nearby. History kept in the database.
 - **Avatar editor.** Hair, skin, outfit, accessories, badge; presets and a randomizer.
 - **Admin panel.** Invite and manage users, reset passwords, see who is online, telemetry dashboard.
+- **Single sign-on (OIDC).** Sign in with Google Workspace, Microsoft Entra ID, Keycloak, Authentik or any OpenID Connect
+  provider, next to e-mail/password accounts; accounts are created or linked on first sign-in, admins can come from a group claim.
 - **Map editor.** Draw your own office in the browser: floors, walls, furniture, rooms, desks; versions and publishing.
 - **Whitelabel.** Name, logo, accent color and the sign in the lobby come from environment variables.
 - **Three languages.** English, Brazilian Portuguese and Spanish; each person can pick theirs. Adding a language is a PR.
@@ -115,6 +117,7 @@ platform's CLI); it cannot open ports or create DNS records for you unless you g
 - [Configuration](docs/configuration.md) — every environment variable, branding, languages.
 - [Architecture](docs/architecture.md) — how the pieces talk to each other and why there is one app replica.
 - [Admin guide](docs/admin-guide.md) — users, map editor, telemetry, CLI.
+- [Single sign-on](docs/sso.md) — OpenID Connect with Google Workspace, Entra ID, Keycloak, Authentik; account linking, admin mapping.
 - [LiveKit](docs/livekit.md) — self-hosted vs cloud, ports, TURN, testing a connection.
 - [Database](docs/database.md) — bundled MySQL vs managed services.
 - [Reverse proxy and TLS](docs/reverse-proxy.md) — Caddy, Traefik, nginx, Cloudflare.

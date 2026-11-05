@@ -19,6 +19,8 @@ export interface UserPatch {
   appearance?: Appearance | null;
   settings?: Partial<UserSettings> | null;
   must_change_password?: boolean;
+  /** Vínculo com um provedor externo (`oidc:<issuer>|<sub>`); null desfaz o vínculo. */
+  external_id?: string | null;
 }
 
 export interface CreateLocalUser {
@@ -29,6 +31,8 @@ export interface CreateLocalUser {
   role_name?: string | null;
   is_admin?: boolean;
   must_change_password?: boolean;
+  /** Conta criada já vinculada a um provedor externo (login único). */
+  external_id?: string | null;
 }
 
 export interface UsersRepo {
@@ -83,6 +87,7 @@ const PATCH_COLUMNS: Record<keyof UserPatch, { col: string; json?: boolean; bool
   appearance: { col: 'appearance', json: true },
   settings: { col: 'settings', json: true },
   must_change_password: { col: 'must_change_password', bool: true },
+  external_id: { col: 'external_id' },
 };
 
 export function createMysqlUsersRepo(db: Db): UsersRepo {
@@ -144,9 +149,9 @@ export function createMysqlUsersRepo(db: Db): UsersRepo {
 
     async createLocal(u) {
       const res = await db.exec(
-        `INSERT INTO users (email, name, display_name, password_hash, role_name, is_admin, must_change_password)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [u.email.trim().toLowerCase(), u.name, u.display_name ?? null, u.password_hash, u.role_name ?? null, u.is_admin ? 1 : 0, u.must_change_password ? 1 : 0],
+        `INSERT INTO users (email, name, display_name, password_hash, role_name, is_admin, must_change_password, external_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [u.email.trim().toLowerCase(), u.name, u.display_name ?? null, u.password_hash, u.role_name ?? null, u.is_admin ? 1 : 0, u.must_change_password ? 1 : 0, u.external_id ?? null],
       );
       const row = await repo.byId(res.insertId);
       if (!row) throw new Error('user not found after insert');
