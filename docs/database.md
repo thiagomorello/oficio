@@ -84,7 +84,26 @@ By default the app opens plain connections, which is fine for the bundled contai
 - append `?ssl=true` to `DATABASE_URL`: `mysql://user:pass@host:3306/oficio?ssl=true` (`sslmode=required` is accepted too), or
 - set `MYSQL_SSL=required` (works with both `DATABASE_URL` and the `MYSQL_*` form).
 
-With `required` the server certificate is validated against the system CA bundle of the container, which covers every major provider (DigitalOcean, Aiven, PlanetScale/TiDB, Railway's public proxy). For a private CA or a test setup you can use `?ssl=skip-verify` / `MYSQL_SSL=skip-verify`: the connection is encrypted but the certificate is not checked. `ssl=false`, `0` or an empty value disables TLS. Custom CA files are not supported yet ([roadmap](roadmap.md)).
+With `required` the server certificate is validated against the system CA bundle of the container, which covers every major provider (DigitalOcean, Aiven, PlanetScale/TiDB, Railway's public proxy). `ssl=false`, `0` or an empty value disables TLS.
+
+**Private or corporate CA.** When the database certificate is signed by a CA that is not in the system bundle (a self-managed MySQL, a corporate PKI, some cloud providers that hand you a `ca.pem` to download), point the app at the PEM bundle instead of turning validation off:
+
+```ini
+MYSQL_SSL_CA=/certs/mysql-ca.pem        # or DATABASE_URL=mysql://...?sslca=/certs/mysql-ca.pem
+```
+
+The file may contain one or several certificates (a chain). Setting it implies TLS with full validation, so `MYSQL_SSL` can stay empty. With the compose stack, put the file next to `.env` and mount it into the app container through a `docker-compose.override.yml`:
+
+```yaml
+services:
+  app:
+    volumes:
+      - ./certs/mysql-ca.pem:/certs/mysql-ca.pem:ro
+```
+
+The app refuses to start if the file is missing or is not a PEM certificate, so a typo shows up at boot instead of as a silent fallback.
+
+**Last resort.** `?ssl=skip-verify` / `MYSQL_SSL=skip-verify` encrypts the connection but does not check the certificate; use it only temporarily while you obtain the CA file.
 
 ## Migrations
 

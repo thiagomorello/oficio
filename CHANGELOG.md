@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- `MYSQL_SSL_CA` (or `?sslca=` in `DATABASE_URL`): validate the database certificate against a private or corporate CA bundle instead of using `skip-verify`.
 - `AGENTS.md` (and `CLAUDE.md`) with a production deployment runbook and coding rules for AI coding agents; README section explaining how to use it.
 
 ### Changed

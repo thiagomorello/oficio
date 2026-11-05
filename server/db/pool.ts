@@ -1,4 +1,5 @@
-// Pool MySQL (mysql2/promise) atrás de uma interface pequena, para trocar por fakes nos testes.
+// MySQL pool (mysql2/promise) behind a small interface so tests can swap in fakes.
+import { readFileSync } from 'node:fs';
 import mysql from 'mysql2/promise';
 import type { Pool, PoolConnection, PoolOptions } from 'mysql2/promise';
 
@@ -24,13 +25,15 @@ export interface DbConfig {
   password?: string;
   database?: string;
   connectionLimit?: number;
-  /** TLS: `required` valida o certificado do servidor; `skip-verify` cifra sem validar (ambientes de teste). */
+  /** TLS: `required` validates the server certificate; `skip-verify` encrypts without validating (test setups). */
   ssl?: SslMode;
+  /** Path to a PEM bundle with the CA(s) that signed the server certificate (private or corporate CA). Implies `required`. */
+  sslCa?: string;
 }
 
 export type SslMode = 'required' | 'skip-verify';
 
-/** `?ssl=true|1|required|skip-verify` na URL ou MYSQL_SSL com os mesmos valores (`false`/`0`/vazio = sem TLS). */
+/** `?ssl=true|1|required|skip-verify` in the URL or MYSQL_SSL with the same values (`false`/`0`/empty = no TLS). */
 export function parseSslMode(v: string | null | undefined): SslMode | undefined {
   const t = (v ?? '').trim().toLowerCase();
   if (!t || t === 'false' || t === '0' || t === 'off' || t === 'disabled' || t === 'no') return undefined;
@@ -38,7 +41,20 @@ export function parseSslMode(v: string | null | undefined): SslMode | undefined 
   return 'required';
 }
 
-function sslOptions(mode: SslMode | undefined): Pick<PoolOptions, 'ssl'> {
+/** Reads the CA bundle once; a missing or empty file is a configuration error worth failing loudly at boot. */
+export function readCaBundle(path: string): string {
+  let pem: string;
+  try {
+    pem = readFileSync(path, 'utf8');
+  } catch (err) {
+    throw new Error(`MYSQL_SSL_CA: cannot read ${path}: ${(err as Error).message}`);
+  }
+  if (!/-----BEGIN CERTIFICATE-----/.test(pem)) throw new Error(`MYSQL_SSL_CA: ${path} does not contain a PEM certificate`);
+  return pem;
+}
+
+function sslOptions(mode: SslMode | undefined, caPath?: string): Pick<PoolOptions, 'ssl'> {
+  if (caPath) return { ssl: { ca: readCaBundle(caPath), rejectUnauthorized: mode !== 'skip-verify' } };
   if (!mode) return {};
   return { ssl: mode === 'required' ? { rejectUnauthorized: true } : { rejectUnauthorized: false } };
 }
@@ -46,7 +62,8 @@ function sslOptions(mode: SslMode | undefined): Pick<PoolOptions, 'ssl'> {
 /** Monta a config a partir de DATABASE_URL ou das variáveis MYSQL_*. */
 export function dbConfigFromEnv(env: NodeJS.ProcessEnv = process.env): DbConfig | null {
   const url = env.DATABASE_URL?.trim();
-  if (url) return { url, ssl: parseSslMode(env.MYSQL_SSL) };
+  const sslCa = env.MYSQL_SSL_CA?.trim() || undefined;
+  if (url) return { url, ssl: parseSslMode(env.MYSQL_SSL), sslCa };
   const host = env.MYSQL_HOST?.trim();
   if (!host) return null;
   return {
@@ -56,6 +73,7 @@ export function dbConfigFromEnv(env: NodeJS.ProcessEnv = process.env): DbConfig 
     password: env.MYSQL_PASSWORD ?? '',
     database: env.MYSQL_DATABASE?.trim() || 'oficio',
     ssl: parseSslMode(env.MYSQL_SSL),
+    sslCa,
   };
 }
 
@@ -74,6 +92,7 @@ export function poolOptions(cfg: DbConfig): PoolOptions {
     const u = new URL(cfg.url);
     if (u.protocol !== 'mysql:') throw new Error(`DATABASE_URL must start with mysql:// (got ${u.protocol}//)`);
     const sslParam = u.searchParams.get('ssl') ?? u.searchParams.get('sslmode') ?? u.searchParams.get('ssl-mode');
+    const caParam = u.searchParams.get('sslca') ?? u.searchParams.get('ssl-ca') ?? undefined;
     return {
       ...common,
       host: u.hostname,
@@ -81,10 +100,10 @@ export function poolOptions(cfg: DbConfig): PoolOptions {
       user: decodeURIComponent(u.username),
       password: decodeURIComponent(u.password),
       database: decodeURIComponent(u.pathname.replace(/^\//, '')) || 'oficio',
-      ...sslOptions(cfg.ssl ?? parseSslMode(sslParam)),
+      ...sslOptions(cfg.ssl ?? parseSslMode(sslParam), cfg.sslCa ?? caParam),
     };
   }
-  return { ...common, host: cfg.host, port: cfg.port, user: cfg.user, password: cfg.password, database: cfg.database, ...sslOptions(cfg.ssl) };
+  return { ...common, host: cfg.host, port: cfg.port, user: cfg.user, password: cfg.password, database: cfg.database, ...sslOptions(cfg.ssl, cfg.sslCa) };
 }
 
 type Queryable = Pick<Pool | PoolConnection, 'query'>;
