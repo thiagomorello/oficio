@@ -31,7 +31,7 @@ O Oficio é configurado inteiramente por variáveis de ambiente, lidas uma vez n
 | `OFFICE_LOGO_URL` | URL absoluta ou caminho começando com `/` | `/assets/brand/logo.svg` | não | Logo na barra superior, nas páginas de login e de administração. Qualquer coisa que não seja `http(s)://…` ou `/…` volta ao padrão. |
 | `OFFICE_ACCENT_COLOR` | `#rrggbb` | `#7c9cff` | não | Cor de destaque para botões, realces, a placa dentro do mapa e o cabeçalho dos e-mails. Valores inválidos registram um aviso e usam o padrão. |
 | `OFFICE_SIGN_TEXT` | string, máx. 14 caracteres | valor de `OFFICE_APP_NAME` (truncado) | não | Texto da placa da recepção no mapa. Renderizado em uma fonte pixel 5x7 em maiúsculas; acentos são removidos. |
-| `OFFICE_DEFAULT_LOCALE` | `en` \| `pt-BR` | `en` | não | Idioma padrão para visitantes que não escolheram um, para mensagens do servidor e para e-mails. Valores desconhecidos registram um aviso e usam `en`. |
+| `OFFICE_DEFAULT_LOCALE` | `en` \| `pt-BR` \| `es` | `en` | não | Idioma padrão para visitantes que não escolheram um, para mensagens do servidor e para e-mails. Valores desconhecidos registram um aviso e usam `en`. |
 
 Detalhes e dicas em [Detalhes da marca](#detalhes-da-marca) abaixo.
 
@@ -156,7 +156,7 @@ Os clientes leem esses valores de `GET /api/config` ao carregar, então uma alte
 
 ## Idioma
 
-`OFFICE_DEFAULT_LOCALE` é o padrão da instância, não uma trava. A ordem de resolução no navegador é: a escolha salva da pessoa (configurações ou o seletor da página de login, guardada no `localStorage` e no perfil do usuário) → `navigator.languages` do navegador → `OFFICE_DEFAULT_LOCALE`. O servidor escolhe o idioma das mensagens de erro da API e dos e-mails a partir de `?lang=` (usado nos links dos e-mails) → `Accept-Language` → o padrão. Valores suportados: `en`, `pt-BR`. Explicação completa e como adicionar um idioma: [i18n](i18n.md).
+`OFFICE_DEFAULT_LOCALE` é o padrão da instância, não uma trava. A ordem de resolução no navegador é: a escolha salva da pessoa (configurações ou o seletor da página de login, guardada no `localStorage` e no perfil do usuário) → `navigator.languages` do navegador → `OFFICE_DEFAULT_LOCALE`. O servidor escolhe o idioma das mensagens de erro da API e dos e-mails a partir de `?lang=` (usado nos links dos e-mails) → `Accept-Language` → o padrão. Valores suportados: `en`, `pt-BR`, `es`. Explicação completa e como adicionar um idioma: [i18n](i18n.md).
 
 ## Exemplo completo de `.env` para um VPS
 

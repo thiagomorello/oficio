@@ -19,7 +19,7 @@ describe('dicionários', () => {
     }
   });
 
-  it('chaves com plural têm .one e .other nos dois idiomas', () => {
+  it('chaves com plural têm .one e .other em todos os idiomas', () => {
     for (const l of SUPPORTED_LOCALES) {
       for (const k of Object.keys(MESSAGES[l])) {
         if (k.endsWith('.other')) expect(MESSAGES[l][k.replace(/\.other$/, '.one')], `${l}:${k}`).toBeTypeOf('string');
@@ -29,9 +29,11 @@ describe('dicionários', () => {
   });
 
   it('defineMessages prefixa as chaves pela área', () => {
-    const m = defineMessages('x', { a: 'A', 'b.c': 'B' }, { a: 'Á', 'b.c': 'Bê' });
+    const m = defineMessages('x', { en: { a: 'A', 'b.c': 'B' }, 'pt-BR': { a: 'Á', 'b.c': 'Bê' }, es: { a: 'Á', 'b.c': 'Be' } });
     expect(m.en).toEqual({ 'x.a': 'A', 'x.b.c': 'B' });
     expect(m['pt-BR']['x.b.c']).toBe('Bê');
+    expect(m.es['x.b.c']).toBe('Be');
+    expect(Object.keys(m).sort()).toEqual([...SUPPORTED_LOCALES].sort());
   });
 });
 
@@ -43,6 +45,7 @@ describe('t / interpolação / plural', () => {
 
   it('tFor cai para en e depois para a chave', () => {
     expect(tFor('pt-BR', 'common.cancel')).toBe('Cancelar');
+    expect(tFor('es', 'common.cancel')).toBe('Cancelar');
     expect(tFor('en', 'common.cancel')).toBe('Cancel');
     expect(tFor('pt-BR', 'nope.nope' as never)).toBe('nope.nope');
   });
@@ -65,6 +68,9 @@ describe('resolução de idioma', () => {
     expect(resolveLocale(['pt-PT'])).toBe('pt-BR');
     expect(resolveLocale(['PT-br'])).toBe('pt-BR');
     expect(resolveLocale(['en-GB', 'pt-BR'])).toBe('en');
+    expect(resolveLocale(['es'])).toBe('es');
+    expect(resolveLocale(['es-MX', 'en'])).toBe('es');
+    expect(resolveLocale(['ES-es'])).toBe('es');
     expect(resolveLocale(['de', 'fr'])).toBe('en');
     expect(resolveLocale(['de'], 'pt-BR')).toBe('pt-BR');
     expect(resolveLocale([null, undefined, ''])).toBe('en');
@@ -73,6 +79,7 @@ describe('resolução de idioma', () => {
   it('Accept-Language respeita o peso q', () => {
     expect(localeFromAcceptLanguage('pt-BR,pt;q=0.9,en;q=0.8')).toBe('pt-BR');
     expect(localeFromAcceptLanguage('en;q=0.5, pt;q=0.9')).toBe('pt-BR');
+    expect(localeFromAcceptLanguage('es-AR,es;q=0.9,en;q=0.8')).toBe('es');
     expect(localeFromAcceptLanguage('de-DE,de;q=0.9')).toBe('en');
     expect(localeFromAcceptLanguage('de-DE', 'pt-BR')).toBe('pt-BR');
     expect(localeFromAcceptLanguage(undefined, 'pt-BR')).toBe('pt-BR');

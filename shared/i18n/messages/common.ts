@@ -1,9 +1,8 @@
 // Mensagens compartilhadas por várias telas (botões, estados, erros genéricos).
 import { defineMessages } from '../core';
 
-export const common = defineMessages(
-  'common',
-  {
+export const common = defineMessages('common', {
+  en: {
     ok: 'OK',
     cancel: 'Cancel',
     close: 'Close',
@@ -36,7 +35,7 @@ export const common = defineMessages(
     'people.one': '{n} person',
     'people.other': '{n} people',
   },
-  {
+  'pt-BR': {
     ok: 'OK',
     cancel: 'Cancelar',
     close: 'Fechar',
@@ -69,4 +68,37 @@ export const common = defineMessages(
     'people.one': '{n} pessoa',
     'people.other': '{n} pessoas',
   },
-);
+  es: {
+    ok: 'OK',
+    cancel: 'Cancelar',
+    close: 'Cerrar',
+    save: 'Guardar',
+    delete: 'Eliminar',
+    edit: 'Editar',
+    back: 'Volver',
+    yes: 'Sí',
+    no: 'No',
+    loading: 'Cargando…',
+    search: 'Buscar',
+    genericError: 'Algo salió mal. Inténtalo de nuevo.',
+    offline: 'Sin conexión con el servidor',
+    tooManyAttempts: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+    errorStatus: 'Error {status}',
+    language: 'Idioma',
+    backToOffice: 'Volver a la oficina',
+    now: 'ahora',
+    'ago.seconds': 'hace {n} s',
+    'ago.minutes': 'hace {n} min',
+    'ago.hours': 'hace {n} h',
+    'ago.days': 'hace {n} d',
+    'in.lessThanMinute': 'en menos de 1 min',
+    'in.duration': 'en {duration}',
+    'reset.todayAt': 'a las {time}',
+    'reset.tomorrowAt': 'mañana a las {time}',
+    renewed: 'renovada',
+    renewedSummary: 'renovada desde la última lectura (uso actual desconocido)',
+    percentUsed: '{pct}% usado',
+    'people.one': '{n} persona',
+    'people.other': '{n} personas',
+  },
+});

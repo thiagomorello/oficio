@@ -2,9 +2,8 @@
 // pt-BR precisa ter exatamente as mesmas chaves.
 import { defineMessages } from '../core';
 
-export const av = defineMessages(
-  'av',
-  {
+export const av = defineMessages('av', {
+  en: {
     'strip.label': 'People near you',
     'controls.label': 'Audio and video',
     unlock: 'Click to enable audio',
@@ -64,7 +63,7 @@ export const av = defineMessages(
     'error.switchDevice': 'Could not switch the device.',
     'error.duplicate': 'Your audio and video were opened in another tab.',
   },
-  {
+  'pt-BR': {
     'strip.label': 'Pessoas perto de você',
     'controls.label': 'Áudio e vídeo',
     unlock: 'Clique para ativar o áudio',
@@ -124,4 +123,64 @@ export const av = defineMessages(
     'error.switchDevice': 'Não foi possível trocar o dispositivo.',
     'error.duplicate': 'Seu áudio e vídeo foram abertos em outra aba.',
   },
-);
+  es: {
+    'strip.label': 'Personas cerca de ti',
+    'controls.label': 'Audio y video',
+    unlock: 'Haz clic para activar el audio',
+    join: 'Entrar al audio',
+    leave: 'Salir del audio',
+    minimize: 'Minimizar videos',
+    restore: 'Restaurar videos',
+    minimizeShort: 'Minimizar',
+    restoreShort: 'Restaurar',
+    chooseDevices: 'Elegir dispositivos…',
+    testSound: 'Probar sonido',
+
+    'mic.on': 'Activar micrófono',
+    'mic.off': 'Silenciar micrófono',
+    'mic.blocked': 'Micrófono bloqueado por el navegador',
+    'cam.on': 'Encender cámara',
+    'cam.off': 'Apagar cámara',
+    'cam.blocked': 'Cámara bloqueada por el navegador',
+    'screen.share': 'Compartir pantalla',
+    'screen.stop': 'Dejar de compartir',
+    'screen.onlyMeeting': 'Compartir pantalla (solo en salas de reunión)',
+    'screen.onlyMeetingNotice': 'Compartir pantalla solo es posible dentro de una sala de reunión.',
+
+    'tile.muted': 'Micrófono silenciado',
+    'tile.expand': 'Ampliar',
+    'tile.shrink': 'Reducir',
+    'tile.shrinkEsc': 'Reducir (Esc)',
+    'tile.pin': 'Anclar',
+    'tile.unpin': 'Desanclar',
+    'tile.stop': 'Detener',
+    'tile.screenOf': 'Pantalla de {name}',
+
+    'status.connecting': 'Conectando audio…',
+    'status.reconnecting': 'Reconectando audio…',
+    'status.unavailable': 'Audio y video no disponibles por el momento.',
+    'status.left': 'Saliste del audio. Nadie puede oírte.',
+
+    'devices.title': 'Dispositivos',
+    'device.audioinput': 'Micrófono',
+    'device.videoinput': 'Cámara',
+    'device.audiooutput': 'Altavoz',
+    'device.systemDefault': 'Predeterminado del sistema',
+    'device.none': 'No se encontró ningún dispositivo. Permite el acceso a la cámara y al micrófono en el navegador.',
+    'meter.label': 'Nivel del micrófono',
+    'meter.hint': 'Activa el micrófono para ver el nivel.',
+
+    'kind.mic': 'el micrófono',
+    'kind.cam': 'la cámara',
+    'kind.screen': 'la pantalla',
+    'error.screen': 'No se pudo compartir la pantalla. Inténtalo de nuevo en un momento.',
+    'error.blocked': 'El navegador bloqueó {what}. Permite el acceso desde el candado de la barra de direcciones.',
+    'error.noMic': 'No se encontró ningún micrófono.',
+    'error.noCam': 'No se encontró ninguna cámara.',
+    'error.inUse': 'No se pudo usar {what}: está en uso por otra aplicación.',
+    'error.enable': 'No se pudo activar {what}.',
+    'error.switchTo': 'No se pudo cambiar a {what}.',
+    'error.switchDevice': 'No se pudo cambiar el dispositivo.',
+    'error.duplicate': 'Tu audio y video se abrieron en otra pestaña.',
+  },
+});

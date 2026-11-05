@@ -85,7 +85,7 @@ Optional:
 | `OFFICE_LOGO_URL` | built-in logo | absolute URL of your logo |
 | `OFFICE_ACCENT_COLOR` | `#7c9cff` | `#rrggbb` |
 | `OFFICE_SIGN_TEXT` | app name | lobby sign, max 14 chars |
-| `OFFICE_DEFAULT_LOCALE` | `en` | `en` or `pt-BR` |
+| `OFFICE_DEFAULT_LOCALE` | `en` | `en`, `pt-BR` or `es` |
 | `SENDGRID_API_KEY`, `MAIL_FROM` | empty | invite / reset e-mails |
 | `METRICS_TOKEN` | empty (public aggregate metrics) | protects `/metrics` |
 | `TZ` | `UTC` | container time zone |

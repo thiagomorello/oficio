@@ -186,7 +186,7 @@ Set these four lines (everything else can stay as generated):
 
 The example file also contains `OFFICE_PUBLIC_URL=https://office.example.com`, `OFFICE_ALLOWED_HOSTS=office.example.com` and `LIVEKIT_URL=wss://livekit.example.com`. Either update them to your real domains or delete the three lines so the compose defaults (derived from `OFFICE_DOMAIN` / `LIVEKIT_DOMAIN`) apply. Leaving the example values would make the app reject requests for your real host name.
 
-Optional branding, also in `.env`: `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR` (`#rrggbb`), `OFFICE_SIGN_TEXT` (the sign in the lobby, max 14 characters), `OFFICE_DEFAULT_LOCALE` (`en` or `pt-BR`). E-mail for invites and password resets: `SENDGRID_API_KEY` and `MAIL_FROM`; without them the admin panel shows temporary passwords on screen instead. Full reference: [../configuration.md](../configuration.md).
+Optional branding, also in `.env`: `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR` (`#rrggbb`), `OFFICE_SIGN_TEXT` (the sign in the lobby, max 14 characters), `OFFICE_DEFAULT_LOCALE` (`en`, `pt-BR` or `es`). E-mail for invites and password resets: `SENDGRID_API_KEY` and `MAIL_FROM`; without them the admin panel shows temporary passwords on screen instead. Full reference: [../configuration.md](../configuration.md).
 
 Save with `Ctrl+O`, `Enter`, then `Ctrl+X`.
 

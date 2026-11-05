@@ -173,7 +173,7 @@ Open the **Environment Variables** tab. Coolify has pre-filled the `${...}` name
 | `LIVEKIT_API_KEY` | `API` + 12 hex |
 | `LIVEKIT_API_SECRET` | 48 hex chars |
 
-Optional: `OFICIO_VERSION` (image tag, default `latest`), `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR`, `OFFICE_SIGN_TEXT`, `OFFICE_DEFAULT_LOCALE` (`en`/`pt-BR`), `SENDGRID_API_KEY` + `MAIL_FROM`, `METRICS_TOKEN`, `TZ`. Leave unknown ones empty rather than deleting them.
+Optional: `OFICIO_VERSION` (image tag, default `latest`), `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR`, `OFFICE_SIGN_TEXT`, `OFFICE_DEFAULT_LOCALE` (`en`/`pt-BR`/`es`), `SENDGRID_API_KEY` + `MAIL_FROM`, `METRICS_TOKEN`, `TZ`. Leave unknown ones empty rather than deleting them.
 
 Mark the secrets as such if your Coolify version offers the toggle (hides them in the UI).
 

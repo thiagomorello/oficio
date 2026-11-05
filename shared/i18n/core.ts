@@ -7,26 +7,36 @@ export { DEFAULT_LOCALE, SUPPORTED_LOCALES };
 
 export type Params = Readonly<Record<string, string | number>>;
 
-/** Mensagens de uma área, nos dois idiomas, com as chaves já prefixadas (`area.chave`). */
+/** Mensagens de uma área, em todos os idiomas, com as chaves já prefixadas (`area.chave`). */
 export type AreaMessages<K extends string> = { readonly [L in Locale]: Readonly<Record<K, string>> };
 
 type Prefixed<P extends string, K> = K extends string ? `${P}.${K}` : never;
 
 /**
- * Define as mensagens de uma área. `en` é a fonte das chaves; `pt-BR` precisa ter exatamente as mesmas
- * (erro de tipo se faltar ou sobrar). Devolve os dicionários com as chaves prefixadas por `area.`.
+ * Dicionários de uma área por idioma. `en` é a fonte das chaves; cada outro idioma de SUPPORTED_LOCALES é
+ * obrigatório e precisa ter exatamente as mesmas chaves (erro de tipo se faltar ou sobrar).
+ */
+export type LocaleDicts<T extends Readonly<Record<string, string>>> = { readonly en: T } & {
+  readonly [L in Exclude<Locale, 'en'>]: { readonly [K in keyof T]: string };
+};
+
+/**
+ * Define as mensagens de uma área a partir de um mapa `{ en, 'pt-BR', es, ... }`. Devolve os dicionários com as
+ * chaves prefixadas por `area.`. Para adicionar um idioma: inclua-o em SUPPORTED_LOCALES e o compilador aponta
+ * cada área que ainda não o tem.
  */
 export function defineMessages<P extends string, const T extends Readonly<Record<string, string>>>(
   area: P,
-  en: T,
-  ptBR: { readonly [K in keyof T]: string },
+  dicts: LocaleDicts<T>,
 ): AreaMessages<Prefixed<P, keyof T>> {
   const prefix = (d: Readonly<Record<string, string>>): Record<string, string> => {
     const out: Record<string, string> = {};
     for (const [k, v] of Object.entries(d)) out[`${area}.${k}`] = v;
     return out;
   };
-  return { en: prefix(en), 'pt-BR': prefix(ptBR) } as AreaMessages<Prefixed<P, keyof T>>;
+  const out: Partial<Record<Locale, Record<string, string>>> = {};
+  for (const locale of SUPPORTED_LOCALES) out[locale] = prefix((dicts as Record<Locale, Readonly<Record<string, string>>>)[locale]);
+  return out as AreaMessages<Prefixed<P, keyof T>>;
 }
 
 /** Substitui `{nome}` pelos parâmetros; chaves ausentes ficam como estão (visível, para corrigir). */
@@ -37,7 +47,7 @@ export function interpolate(template: string, params?: Params): string {
 
 /**
  * Escolhe o idioma suportado mais próximo de uma lista de candidatos (`localStorage`, `navigator.languages`,
- * `Accept-Language`...). Casa por igualdade, depois pelo idioma base (`pt-PT` -> `pt-BR`, `en-GB` -> `en`).
+ * `Accept-Language`...). Casa por igualdade, depois pelo idioma base (`pt-PT` -> `pt-BR`, `en-GB` -> `en`, `es-MX` -> `es`).
  */
 export function resolveLocale(candidates: ReadonlyArray<string | null | undefined>, fallback: Locale = DEFAULT_LOCALE): Locale {
   const supported = SUPPORTED_LOCALES as readonly string[];

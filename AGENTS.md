@@ -48,7 +48,7 @@ a smoke test of the image and `docker compose config` on every compose file.
    `livekit.example.com`. If they use Cloudflare, the LiveKit record must be *DNS only* (grey cloud).
 3. **An e-mail address** for Let's Encrypt notices (`ACME_EMAIL`).
 4. **The server's public IP** (`LIVEKIT_NODE_IP`). `curl -4 ifconfig.me` on the server gives it.
-5. **Branding**: app name, optional logo URL, accent color, default language (`en` or `pt-BR`).
+5. **Branding**: app name, optional logo URL, accent color, default language (`en`, `pt-BR` or `es`).
 6. **The first administrator**: e-mail and display name.
 7. **LiveKit**: self-hosted in the stack (default on a VPS) or [LiveKit Cloud](docs/deploy/livekit-cloud.md)
    (required on PaaS without UDP). For Cloud you need its `wss://` URL, API key and API secret from the human.
@@ -147,7 +147,7 @@ the LiveKit API.
 
 - TypeScript strict, ESM. The client is plain DOM built with `h()` from `client/src/ui/dom.ts` plus canvas; do not
   introduce a UI framework. CSS classes use the `of-` prefix and colors come from the `--accent*` variables.
-- Every user-facing string goes through `t()` from `shared/i18n` with both `en` and `pt-BR` messages in
+- Every user-facing string goes through `t()` from `shared/i18n` with `en`, `pt-BR` and `es` messages in
   `shared/i18n/messages/*.ts`; `npm test` fails if a key is missing in one language. See [docs/i18n.md](docs/i18n.md).
 - Server-side texts (HTTP errors, e-mails, default map) are translated with the request translator (`tr`) and the
   user's locale; do not hardcode English or Portuguese in `server/`.

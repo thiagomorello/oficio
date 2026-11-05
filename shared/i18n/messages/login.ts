@@ -1,9 +1,8 @@
 // Página /login: entrar, esqueci a senha, redefinir e troca obrigatória.
 import { defineMessages } from '../core';
 
-export const login = defineMessages(
-  'login',
-  {
+export const login = defineMessages('login', {
+  en: {
     pageTitle: 'Sign in',
     'title.login': 'Sign in',
     'sub.login': 'Use the e-mail and password of your account.',
@@ -31,7 +30,7 @@ export const login = defineMessages(
     'notice.linkSent': 'If the e-mail is registered, we sent a link to reset the password. It is valid for 1 hour.',
     'notice.passwordChanged': 'Password changed. Sign in with the new password.',
   },
-  {
+  'pt-BR': {
     pageTitle: 'Entrar',
     'title.login': 'Entrar',
     'sub.login': 'Use o e-mail e a senha do seu cadastro.',
@@ -59,4 +58,32 @@ export const login = defineMessages(
     'notice.linkSent': 'Se o e-mail estiver cadastrado, enviamos um link para redefinir a senha. Ele vale por 1 hora.',
     'notice.passwordChanged': 'Senha alterada. Entre com a nova senha.',
   },
-);
+  es: {
+    pageTitle: 'Iniciar sesión',
+    'title.login': 'Iniciar sesión',
+    'sub.login': 'Usa el correo y la contraseña de tu cuenta.',
+    'title.forgot': 'Olvidé mi contraseña',
+    'sub.forgot': 'Escribe tu correo para recibir un enlace de restablecimiento.',
+    'title.reset': 'Definir nueva contraseña',
+    'sub.reset': 'Elige una contraseña de al menos 8 caracteres.',
+    'title.change': 'Definir nueva contraseña',
+    'sub.change': 'Por seguridad, cambia la contraseña temporal antes de continuar.',
+    'action.login': 'Iniciar sesión',
+    'action.sendLink': 'Enviar enlace',
+    'action.savePassword': 'Guardar contraseña',
+    'field.email': 'Correo electrónico',
+    'field.password': 'Contraseña',
+    'field.newPassword': 'Nueva contraseña',
+    'field.repeatPassword': 'Repite la nueva contraseña',
+    'link.forgot': 'Olvidé mi contraseña',
+    'link.backToLogin': 'Volver al inicio de sesión',
+    'link.signOut': 'Cerrar sesión',
+    'error.emailAndPassword': 'Escribe tu correo y tu contraseña.',
+    'error.email': 'Escribe tu correo.',
+    'error.passwordLength': 'La contraseña debe tener al menos 8 caracteres',
+    'error.passwordMismatch': 'Las contraseñas no coinciden',
+    'notice.mailNotConfigured': 'El envío de correo no está configurado. Pide a un administrador que restablezca tu contraseña.',
+    'notice.linkSent': 'Si el correo está registrado, enviamos un enlace para restablecer la contraseña. Es válido por 1 hora.',
+    'notice.passwordChanged': 'Contraseña cambiada. Inicia sesión con la nueva contraseña.',
+  },
+});

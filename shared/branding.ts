@@ -12,8 +12,8 @@ export interface BrandingConfig {
   signText: string;
 }
 
-/** Idiomas da interface. A ordem importa: o primeiro é o fallback universal. */
-export const SUPPORTED_LOCALES = ['en', 'pt-BR'] as const;
+/** Idiomas da interface. A ordem importa: o primeiro é o fallback universal e a ordem é a dos seletores. */
+export const SUPPORTED_LOCALES = ['en', 'pt-BR', 'es'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
 

@@ -41,7 +41,7 @@ name, logo and colors.
 - **Admin panel.** Invite and manage users, reset passwords, see who is online, telemetry dashboard.
 - **Map editor.** Draw your own office in the browser: floors, walls, furniture, rooms, desks; versions and publishing.
 - **Whitelabel.** Name, logo, accent color and the sign in the lobby come from environment variables.
-- **Two languages.** English and Brazilian Portuguese; each person can pick theirs. Adding a language is a PR.
+- **Three languages.** English, Brazilian Portuguese and Spanish; each person can pick theirs. Adding a language is a PR.
 - **Operations-friendly.** Health endpoint, Prometheus metrics, additive migrations, single stateless-ish container,
   multi-arch image (amd64/arm64).
 

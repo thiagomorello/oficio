@@ -1,11 +1,10 @@
 // Mensagens da área "server": respostas HTTP, página 403, e-mails e avisos do mundo/WebSocket que chegam
-// a quem usa o app. Chave em inglês = fonte; pt-BR precisa ter exatamente as mesmas chaves.
+// a quem usa o app. Chave em inglês = fonte; pt-BR e es precisam ter exatamente as mesmas chaves.
 // Logs e saída da CLI NÃO passam por aqui (ficam em inglês puro no código).
 import { defineMessages } from '../core';
 
-export const server = defineMessages(
-  'server',
-  {
+export const server = defineMessages('server', {
+  en: {
     // ---- HTTP genérico (HttpError / sendJson)
     'http.badJsonContentType': 'send the body as JSON (Content-Type: application/json)',
     'http.bodyTooLarge': 'request body too large',
@@ -123,7 +122,7 @@ export const server = defineMessages(
     'decor.slotMismatch': 'this item does not fit in that slot',
     'decor.tooLarge': 'decoration too large',
   },
-  {
+  'pt-BR': {
     'http.badJsonContentType': 'envie o corpo como JSON (Content-Type: application/json)',
     'http.bodyTooLarge': 'corpo grande demais',
     'http.invalidJson': 'JSON inválido',
@@ -230,4 +229,111 @@ export const server = defineMessages(
     'decor.slotMismatch': 'item não cabe neste slot',
     'decor.tooLarge': 'decoração grande demais',
   },
-);
+  es: {
+    'http.badJsonContentType': 'envía el cuerpo como JSON (Content-Type: application/json)',
+    'http.bodyTooLarge': 'cuerpo de la solicitud demasiado grande',
+    'http.invalidJson': 'JSON inválido',
+    'http.invalidData': 'datos inválidos',
+    'http.methodNotAllowed': 'método no permitido',
+    'http.notFound': 'no encontrado',
+    'http.unauthenticated': 'no autenticado',
+    'http.adminOnly': 'restringido a administradores',
+    'http.internalError': 'error interno',
+    'http.authNotConfigured': 'autenticación no configurada',
+    'http.livekitNotConfigured': 'LiveKit no configurado',
+    'http.tooManyRequests': 'demasiadas solicitudes',
+
+    'guard.hostNotAllowed': 'Host no permitido: {host}. Abre la app en http://localhost (o por IP) o permite el nombre en OFFICE_ALLOWED_HOSTS.',
+    'guard.originNotAllowed': 'Origen no permitido.',
+    'guard.jsonRequired': 'Envía el cuerpo como JSON (Content-Type: application/json).',
+
+    'static.methodNotAllowed': 'Método no permitido',
+    'static.notBuilt': 'Cliente no compilado. Ejecuta "npm run build" (o usa "npm run dev").',
+    'static.invalidPath': 'Ruta inválida',
+    'static.notFound': 'No encontrado',
+
+    'auth.passwordMin': 'La contraseña debe tener al menos 8 caracteres',
+    'auth.passwordTooLong': 'La contraseña es demasiado larga',
+    'auth.passwordEqualsEmail': 'La contraseña no puede ser igual al correo electrónico',
+    'auth.tooManyAttempts': 'Demasiados intentos. Inténtalo de nuevo más tarde.',
+    'auth.invalidCredentials': 'Correo electrónico o contraseña inválidos',
+    'auth.accountDisabled': 'Cuenta desactivada. Contacta a un administrador.',
+    'auth.resetLinkInvalid': 'Enlace inválido o expirado. Solicita uno nuevo.',
+    'auth.requestNewLink': '{reason}. Solicita un nuevo enlace.',
+    'auth.currentPasswordWrong': 'La contraseña actual es incorrecta',
+
+    'me.appearanceMissing': 'falta la apariencia',
+    'me.invalidName': 'Nombre inválido: {detail}',
+    'me.invalidAppearance': 'Apariencia inválida',
+    'me.invalidSettings': 'Configuración inválida',
+    'me.invalidDecor': 'Decoración inválida',
+    'me.noDesk': 'sin escritorio',
+
+    'admin.nameRequired': 'Ingresa el nombre',
+    'admin.invalidEmail': 'Correo inválido',
+    'admin.userNotFound': 'usuario no encontrado',
+    'admin.emailTaken': 'Ya existe un usuario con este correo electrónico',
+    'admin.cannotDisableSelf': 'No puedes desactivar tu propia cuenta',
+    'admin.cannotDropOwnAdmin': 'No puedes quitarte tu propio acceso de administrador',
+    'admin.lastAdmin': 'No se puede quitar al último administrador',
+    'admin.userHasNoDesk': 'El usuario no tiene escritorio',
+
+    'maps.noDraft': 'no hay borrador',
+    'maps.notFound': 'mapa no encontrado',
+    'maps.versionName': 'Versión {n}',
+    'maps.publishFailed': 'no se pudo publicar la versión',
+    'maps.draftCreateFailed': 'no se pudo crear el borrador',
+    'maps.draftChangedRetry': 'el borrador cambió mientras se guardaba; inténtalo de nuevo',
+    'maps.invalidDocument': 'documento inválido',
+    'maps.invalidBaseUpdatedAt': 'baseUpdatedAt inválido',
+    'maps.draftConflict': 'el borrador fue modificado por otra persona',
+    'maps.cannotDeletePublished': 'la versión publicada no se puede eliminar',
+    'maps.cannotDeleteOnlyVersion': 'la única versión no se puede eliminar',
+    'maps.hasErrors': 'el mapa tiene errores',
+    'maps.confirmWarnings': 'confirma las advertencias para publicar',
+    'maps.versionRequired': 'especifica una versión',
+    'maps.versionNotFound': 'versión no encontrada',
+
+    'telemetry.invalidUser': 'user inválido',
+    'telemetry.invalidKind': 'kind inválido',
+    'telemetry.invalidSession': 'session inválida',
+    'telemetry.unavailable': 'telemetría no disponible',
+
+    'page.accessDeniedTitle': 'Acceso denegado',
+    'page.restricted': 'Área restringida',
+    'page.adminsOnly': 'Hola, {name}. Esta área es solo para administradores.',
+    'page.backToOffice': 'Volver a la oficina',
+
+    'mail.invite.subject': 'Tu acceso a {appName}',
+    'mail.invite.title': 'Te damos la bienvenida a {appName}',
+    'mail.invite.intro': 'Creamos tu acceso. Inicia sesión con tu correo y esta contraseña temporal:',
+    'mail.invite.changeNotice': 'Te pediremos definir una nueva contraseña en tu primer inicio de sesión.',
+    'mail.invite.button': 'Iniciar sesión',
+    'mail.invite.textGreeting': 'Te damos la bienvenida a {appName}.',
+    'mail.invite.textPassword': 'Contraseña temporal: {password}',
+    'mail.invite.textLogin': 'Iniciar sesión: {url}',
+    'mail.invite.textNotice': 'Definirás una nueva contraseña en tu primer inicio de sesión.',
+    'mail.reset.subject': 'Restablece tu contraseña de {appName}',
+    'mail.reset.title': 'Restablecer contraseña',
+    'mail.reset.intro': 'Recibimos una solicitud para restablecer tu contraseña. El enlace es válido por 1 hora. Si no fuiste tú, ignora este correo.',
+    'mail.reset.button': 'Definir nueva contraseña',
+    'mail.reset.text': 'Para restablecer tu contraseña, abre el enlace (válido por 1 hora):\n{link}\n\nSi no fuiste tú, ignora este correo.',
+
+    'world.room': 'sala',
+    'world.desk': 'escritorio',
+    'world.chat': 'chat',
+    'world.notInRoom': 'no estás dentro de una sala',
+    'world.roomNotLockable': 'esta sala no se puede bloquear',
+    'world.onlyMembersLock': 'solo quienes están en la sala pueden bloquearla',
+    'world.onlyMembersAnswer': 'solo quienes están en la sala pueden responder',
+    'world.nobodyKnocked': 'nadie tocó la puerta',
+    'world.deskTaken': 'este escritorio ya tiene dueño',
+    'world.noDesk': 'no tienes escritorio',
+    'world.deskRemoved': 'Tu escritorio fue eliminado del mapa.',
+    'ws.error': 'error',
+    'ws.restarting': 'servidor reiniciando',
+    'decor.invalidVariant': 'variante inválida para este elemento',
+    'decor.slotMismatch': 'este elemento no cabe en ese espacio',
+    'decor.tooLarge': 'decoración demasiado grande',
+  },
+});
