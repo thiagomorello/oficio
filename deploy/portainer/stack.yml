@@ -142,9 +142,9 @@ configs:
   caddyfile:
     content: |
       {
-        email {$ACME_EMAIL}
+        email {$$ACME_EMAIL}
       }
-      {$OFFICE_DOMAIN} {
+      {$$OFFICE_DOMAIN} {
         encode zstd gzip
         header {
           Strict-Transport-Security "max-age=31536000"
@@ -154,7 +154,7 @@ configs:
         }
         reverse_proxy app:4747
       }
-      {$LIVEKIT_DOMAIN} {
+      {$$LIVEKIT_DOMAIN} {
         reverse_proxy livekit:7880
       }
 
