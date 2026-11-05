@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#121212" />
+    <link rel="icon" type="image/png" href="/assets/brand/icon-192.png" />
+    <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="description" content="Virtual office: pixel-art map, presence, chat and proximity audio/video." />
+    <title>Oficio</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #121212; font-family: 'Poppins', system-ui, sans-serif; }
+      #world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; image-rendering: pixelated; }
+      #ui { position: fixed; inset: 0; pointer-events: none; }
+      #ui > * { pointer-events: auto; }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <div id="ui"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

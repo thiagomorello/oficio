@@ -1,0 +1,39 @@
+# LiveKit server configuration for a self-hosted Oficio (reference / standalone install).
+# docker-compose.yml and the Portainer stacks embed an equivalent config; use this file when you run LiveKit on its
+# own host or with `livekit-server --config livekit.yaml`. Full reference: https://docs.livekit.io/home/self-hosting/deployment/
+#
+# Keys: either here (uncomment `keys`) or via the LIVEKIT_KEYS environment variable ("APIxxxx: secret").
+# The same key/secret pair goes into LIVEKIT_API_KEY / LIVEKIT_API_SECRET of the Oficio app.
+
+port: 7880            # HTTP/WebSocket signaling. Put it behind TLS (wss://) with Caddy/nginx/Traefik.
+
+rtc:
+  tcp_port: 7881      # ICE over TCP, the fallback when UDP is blocked (higher latency).
+  udp_port: 7882      # Single UDP port for all media (simplest firewall rule).
+  # Alternatively, a UDP range instead of a single port:
+  # port_range_start: 50000
+  # port_range_end: 60000
+  # Public IP announced in ICE candidates. With use_external_ip the server discovers it through STUN.
+  # Pin node_ip when the server has a fixed public IP or runs inside Docker/overlay networks.
+  use_external_ip: true
+  # node_ip: 203.0.113.10
+
+# keys:
+#   APIxxxxxxxxxxxx: your-secret-at-least-32-characters
+
+turn:
+  # Only needed for networks that block everything except 443. See docs/livekit.md ("TURN").
+  enabled: false
+  # domain: turn.example.com
+  # tls_port: 5349
+  # udp_port: 3478
+  # external_tls: true
+
+room:
+  auto_create: true
+  empty_timeout: 300
+  departure_timeout: 20
+
+logging:
+  level: info
+  pion_level: error

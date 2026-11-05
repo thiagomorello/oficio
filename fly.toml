@@ -1,0 +1,43 @@
+# Fly.io app for Oficio (docs/deploy/fly.md). Deploy with: fly launch --copy-config --no-deploy && fly secrets set ... && fly deploy
+# One machine only (the office state lives in memory). Database: an external MySQL 8 (see docs/database.md).
+# Audio/video: LiveKit Cloud is the simplest; a self-hosted LiveKit on Fly is described in docs/deploy/fly.md.
+app = "oficio"
+primary_region = "gru"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  OFFICE_IN_DOCKER = "1"
+  OFFICE_HOST = "0.0.0.0"
+  OFFICE_PORT = "4747"
+  OFFICE_COOKIE_SECURE = "1"
+  TRUST_PROXY = "1"
+  OFFICE_APP_NAME = "Oficio"
+  OFFICE_DEFAULT_LOCALE = "en"
+  LIVEKIT_ROOM = "oficio"
+  # Set OFFICE_PUBLIC_URL / OFFICE_ALLOWED_HOSTS / LIVEKIT_URL / LIVEKIT_INTERNAL_URL here (not secret),
+  # and OFFICE_JWT_SECRET / DATABASE_URL / LIVEKIT_API_KEY / LIVEKIT_API_SECRET with `fly secrets set`.
+  OFFICE_PUBLIC_URL = "https://oficio.fly.dev"
+  OFFICE_ALLOWED_HOSTS = "oficio.fly.dev"
+
+[http_service]
+  internal_port = 4747
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/api/health"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

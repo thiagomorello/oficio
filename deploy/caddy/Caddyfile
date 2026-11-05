@@ -1,0 +1,23 @@
+# Caddy reverse proxy for Oficio (standalone install, outside docker-compose.yml which already embeds this).
+# Usage: set the three variables in the environment of the caddy process (or replace them inline) and run
+#   caddy run --config /etc/caddy/Caddyfile
+# Caddy obtains and renews the TLS certificates automatically (DNS must already point to this host).
+{
+	email {$ACME_EMAIL}
+}
+
+{$OFFICE_DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+	# WebSocket (/ws) is proxied transparently.
+	reverse_proxy 127.0.0.1:4747
+}
+
+{$LIVEKIT_DOMAIN} {
+	reverse_proxy 127.0.0.1:7880
+}

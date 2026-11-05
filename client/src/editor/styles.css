@@ -1,0 +1,140 @@
+/* Editor de mapa (/admin/mapa). Tokens de client/src/ui/brand.css. */
+.med { display: flex; flex-direction: column; flex: 1; height: 100%; min-height: 0; color: var(--text); font-family: var(--font); background: var(--bg); }
+.med-loading { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
+
+/* ---- barra de ferramentas */
+.med-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.med-modes, .med-group { display: flex; gap: 2px; padding: 2px; background: var(--surface-2); border-radius: var(--radius-md); }
+.med-spacer { flex: 1; }
+.med-tool { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: var(--gray-100); font: 500 var(--fs-sm)/1 var(--font); cursor: pointer; white-space: nowrap; }
+.med-tool:hover:not(:disabled) { background: var(--surface-3); color: var(--white); }
+.med-tool:focus-visible { outline: 0; box-shadow: inset 0 0 0 1px var(--accent); }
+.med-tool:disabled { opacity: .35; cursor: not-allowed; }
+.med-tool.is-active { background: var(--accent); color: var(--gray-900); }
+.med-tool.is-active kbd { color: var(--gray-800); border-color: rgba(18,18,18,.3); }
+.med-tool kbd, .med-help kbd { font: 500 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 2px 4px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
+.med-docstate { font-size: var(--fs-sm); padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.med-docstate--dirty { color: var(--accent); }
+.med-docstate--saving { color: var(--blue-100); }
+.med-docstate--saved, .med-docstate--clean { color: var(--green-100); }
+.med-docstate--conflict { background: var(--red-600); color: var(--white); }
+.med-docstate--preview { background: var(--blue-300); color: var(--white); }
+
+/* ---- faixa de aviso (conflito / visualização) */
+.med-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 12px; margin-top: 8px; border-radius: var(--radius-md); font-size: var(--fs-md); }
+.med-banner span { flex: 1; min-width: 200px; }
+.med-banner--conflict { background: rgba(227,11,47,.18); border: 1px solid var(--red-600); }
+.med-banner--preview { background: rgba(73,112,252,.16); border: 1px solid var(--blue-300); }
+
+/* ---- corpo */
+.med-body { flex: 1; display: flex; min-height: 0; gap: 0; margin-top: 8px; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.med-stage { position: relative; flex: 1; min-width: 0; background: #121212; }
+.med-canvas { position: absolute; inset: 0; display: block; touch-action: none; outline: 0; image-rendering: pixelated; }
+.med-side { width: 340px; flex: none; display: flex; flex-direction: column; min-height: 0; background: var(--surface-1); border-left: 1px solid var(--line); }
+.med-tabs { padding: 0 12px; gap: 12px; flex: none; }
+.med-tabs .of-tab.has-errors { color: var(--red-500); }
+.med-pane { flex: 1; overflow: auto; padding: 12px; min-height: 0; }
+
+/* ---- status */
+.med-status { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 6px 2px; font-size: var(--fs-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
+.med-st--doc { color: var(--gray-100); }
+.med-st--counts { color: var(--gray-100); }
+
+/* ---- seções e campos */
+.med-sec { margin-bottom: 16px; }
+.med-sec__title { margin: 0 0 8px; font-size: var(--fs-xs); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.med-sec__title--error { color: var(--red-500); margin-top: 12px; }
+.med-sec__title--warn { color: var(--accent); margin-top: 12px; }
+.med-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; min-width: 0; }
+.med-field label { font-size: var(--fs-sm); font-weight: 500; color: var(--gray-100); }
+.med-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.med-input { height: 30px; font-size: var(--fs-md); width: 100%; box-sizing: border-box; }
+.med-input--num { font-variant-numeric: tabular-nums; }
+.med-hint { display: block; margin: 4px 0; font-size: var(--fs-xs); color: var(--muted); }
+.med-check { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-sm); color: var(--gray-100); cursor: pointer; }
+.med-checks { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 10px; }
+.med-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.med-danger { color: var(--red-500) !important; }
+.med-btn-danger { background: var(--red-600) !important; color: var(--white) !important; }
+.med-color-wrap { display: flex; align-items: center; gap: 8px; }
+.med-color { width: 34px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+.med-color-code { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+.med-range { width: 100%; accent-color: var(--accent); }
+.med-props__head, .med-params__head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.med-props__head strong, .med-params__head strong { color: var(--white); font-size: var(--fs-lg); font-weight: 600; }
+.med-id { margin-left: auto; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; }
+.med-stats { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0; font-size: var(--fs-sm); }
+.med-stats dt { color: var(--muted); }
+.med-stats dd { margin: 0; color: var(--white); font-weight: 600; font-variant-numeric: tabular-nums; }
+.med-stats--row { grid-template-columns: repeat(5, auto); grid-auto-flow: column; grid-template-rows: auto auto; justify-content: start; gap: 2px 20px; }
+.med-stats--row dd { font-size: var(--fs-xl); }
+
+/* ---- paleta */
+.med-params { padding: 10px; margin-bottom: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-md); }
+.med-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+.med-grid--wide { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.med-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border: 1px solid transparent; border-radius: var(--radius-md); background: var(--surface-2); color: var(--gray-100); font: 400 var(--fs-xs)/1.25 var(--font); text-align: center; cursor: pointer; min-width: 0; }
+.med-grid--wide .med-item { flex-direction: row; justify-content: flex-start; text-align: left; padding: 6px 8px; }
+.med-item:hover { border-color: var(--line); background: var(--surface-3); }
+.med-item:focus-visible { outline: 0; border-color: var(--accent); }
+.med-item.is-active { border-color: var(--accent); background: rgba(255,216,0,.1); color: var(--white); }
+.med-item__label { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.med-thumb { image-rendering: pixelated; flex: none; }
+.med-swatch { display: inline-block; width: 18px; height: 18px; flex: none; border-radius: 4px; border: 1px solid rgba(255,255,255,.2); }
+.med-swatch--sm { width: 12px; height: 12px; }
+.med-swatch--erase { background: repeating-linear-gradient(45deg, var(--surface-3) 0 4px, var(--red-600) 4px 6px); }
+.med-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--blue-100); flex: none; }
+
+/* ---- camadas */
+.med-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.med-list li { display: flex; align-items: center; gap: 6px; padding-left: 4px; }
+.med-list li.is-hidden .med-list__name { opacity: .45; }
+.med-list__name { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding: 4px 8px; border: 0; border-radius: 4px; background: transparent; color: var(--gray-100); font: 500 var(--fs-md)/1.3 var(--font); text-align: left; cursor: pointer; }
+.med-list__name small { font-size: var(--fs-xs); color: var(--muted); font-weight: 400; }
+.med-list__name:hover { background: var(--surface-2); }
+.med-list__name.is-active { background: rgba(255,216,0,.12); color: var(--white); }
+.med-eye { width: 24px; height: 24px; border: 0; border-radius: 4px; background: transparent; color: var(--accent); cursor: pointer; font-size: 12px; }
+.med-eye.is-off { color: var(--gray-500); }
+.med-eye:hover { background: var(--surface-2); }
+
+/* ---- problemas */
+.med-problems__head { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.med-ok { color: var(--green-100); font-size: var(--fs-md); }
+.med-issues { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.med-issue { display: flex; align-items: flex-start; gap: 8px; width: 100%; box-sizing: border-box; padding: 6px 8px; border: 0; border-left: 3px solid var(--accent); border-radius: 4px; background: var(--surface-2); color: var(--gray-100); font: 400 var(--fs-sm)/1.35 var(--font); text-align: left; cursor: pointer; }
+.med-issue--error { border-left-color: var(--red-600); }
+.med-issue:hover { background: var(--surface-3); }
+.med-issue__dot { width: 8px; height: 8px; margin-top: 4px; flex: none; background: var(--accent); }
+.med-issue--error .med-issue__dot { background: var(--red-600); }
+.med-issue__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.med-issue__body code { font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+.med-issues--dialog { max-height: 220px; overflow: auto; }
+.med-issues--dialog .med-issue { cursor: default; }
+.med-issues--dialog label.med-issue { cursor: pointer; }
+
+/* ---- versões */
+.med-vlist { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.med-vitem { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-2); }
+.med-vitem.is-current { border-color: var(--green-300); }
+.med-vitem.is-viewing { border-color: var(--blue-300); }
+.med-vitem__head { display: flex; align-items: center; gap: 8px; }
+.med-vitem__head strong { color: var(--white); font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.med-vbadges { display: inline-flex; gap: 4px; }
+
+/* ---- modais */
+.med-modal--wide { max-width: 720px; }
+.med-modal-text { margin: 0 0 8px; }
+.med-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.med-impact { margin: 8px 0; padding: 8px 12px; border-radius: var(--radius-md); background: var(--surface-3); color: var(--white); }
+.med-publish .med-field { margin-top: 12px; }
+.med-help td { vertical-align: top; }
+.med-help kbd { white-space: nowrap; }
+
+/* ---- telas estreitas: painel embaixo do canvas */
+@media (max-width: 900px) {
+  .med-body { flex-direction: column; }
+  .med-stage { min-height: 55vh; }
+  .med-side { width: auto; border-left: 0; border-top: 1px solid var(--line); max-height: 45vh; }
+  .med-tool span { display: none; }
+  .med-tool kbd { border: 0; color: inherit; font-size: var(--fs-sm); }
+}

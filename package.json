@@ -1,0 +1,60 @@
+{
+  "name": "oficio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open source self-hosted virtual office: pixel-art map, proximity audio/video with LiveKit, chat and meeting rooms.",
+  "homepage": "https://github.com/thiagomorello/oficio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thiagomorello/oficio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thiagomorello/oficio/issues"
+  },
+  "keywords": [
+    "virtual-office",
+    "remote-work",
+    "livekit",
+    "webrtc",
+    "pixel-art",
+    "self-hosted",
+    "websocket"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --exclude './client/**' server/index.ts --dev",
+    "dev:client": "vite --config vite.config.ts",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build --config vite.config.ts",
+    "build:server": "node scripts/build-server.mjs",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p server/tsconfig.json",
+    "test": "vitest run",
+    "cli": "tsx server/cli.ts"
+  },
+  "devDependencies": {
+    "@fontsource/pixelify-sans": "^5.3.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.20.5",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.3",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie": "^1.1.1",
+    "jsonwebtoken": "^9.0.3",
+    "livekit-client": "^2.22.4",
+    "livekit-server-sdk": "^2.19.1",
+    "mysql2": "^3.24.6",
+    "ws": "^8.22.0",
+    "zod": "^3.25.76"
+  }
+}

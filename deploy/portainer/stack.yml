@@ -1,0 +1,168 @@
+# Oficio — Portainer stack (Docker standalone, "Stacks > Add stack > Web editor" or "Repository").
+#
+# Same services as the root docker-compose.yml (app, livekit, mysql, caddy) but self-contained: no files from the
+# repository are needed, every setting comes from the stack's environment variables.
+#
+# Required variables (Stacks > Environment variables; generate secrets with `openssl rand -hex 24`):
+#   OFFICE_DOMAIN        office.example.com          LIVEKIT_DOMAIN      livekit.example.com
+#   ACME_EMAIL           you@example.com             OFFICE_JWT_SECRET   openssl rand -hex 32
+#   MYSQL_ROOT_PASSWORD  openssl rand -hex 24        MYSQL_PASSWORD      openssl rand -hex 24  (hex only: it goes into a URL)
+#   LIVEKIT_API_KEY      API + openssl rand -hex 6   LIVEKIT_API_SECRET  openssl rand -hex 24
+# Optional: OFICIO_VERSION (image tag, default latest), LIVEKIT_NODE_IP (public IP of the host), OFFICE_APP_NAME,
+#   OFFICE_LOGO_URL, OFFICE_ACCENT_COLOR, OFFICE_SIGN_TEXT, OFFICE_DEFAULT_LOCALE, SENDGRID_API_KEY, MAIL_FROM,
+#   METRICS_TOKEN, TZ, LIVEKIT_TCP_PORT (7881), LIVEKIT_UDP_PORT (7882).
+#
+# Host firewall: 80/tcp, 443/tcp, 7881/tcp, 7882/udp. DNS A records for both domains -> this host. Full guide:
+# docs/deploy/portainer.md. If Traefik/Nginx Proxy Manager already owns ports 80/443 on this host, remove the `caddy`
+# service and route both domains to app:4747 and livekit:7880 in your proxy (docs/reverse-proxy.md).
+
+services:
+  app:
+    image: ghcr.io/thiagomorello/oficio:${OFICIO_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      TZ: ${TZ:-UTC}
+      OFFICE_IN_DOCKER: "1"
+      OFFICE_HOST: 0.0.0.0
+      OFFICE_PORT: "4747"
+      OFFICE_PUBLIC_URL: https://${OFFICE_DOMAIN}
+      OFFICE_ALLOWED_HOSTS: ${OFFICE_DOMAIN}
+      OFFICE_COOKIE_SECURE: "1"
+      TRUST_PROXY: "1"
+      OFFICE_JWT_SECRET: ${OFFICE_JWT_SECRET}
+      OFFICE_APP_NAME: ${OFFICE_APP_NAME:-Oficio}
+      OFFICE_LOGO_URL: ${OFFICE_LOGO_URL:-}
+      OFFICE_ACCENT_COLOR: ${OFFICE_ACCENT_COLOR:-}
+      OFFICE_SIGN_TEXT: ${OFFICE_SIGN_TEXT:-}
+      OFFICE_DEFAULT_LOCALE: ${OFFICE_DEFAULT_LOCALE:-en}
+      DATABASE_URL: mysql://oficio:${MYSQL_PASSWORD}@mysql:3306/oficio
+      LIVEKIT_URL: wss://${LIVEKIT_DOMAIN}
+      LIVEKIT_INTERNAL_URL: http://livekit:7880
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      LIVEKIT_ROOM: oficio
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:4747/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks: [internal, web]
+
+  livekit:
+    image: livekit/livekit-server:v1.13.11
+    restart: unless-stopped
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+      LIVEKIT_CONFIG: |
+        port: 7880
+        rtc:
+          tcp_port: 7881
+          udp_port: 7882
+          use_external_ip: true
+          node_ip: ${LIVEKIT_NODE_IP:-}
+        turn:
+          enabled: false
+        room:
+          auto_create: true
+          empty_timeout: 300
+          departure_timeout: 20
+        logging:
+          level: info
+          pion_level: error
+    ports:
+      - "${LIVEKIT_TCP_PORT:-7881}:7881/tcp"
+      - "${LIVEKIT_UDP_PORT:-7882}:7882/udp"
+    read_only: true
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:7880/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks: [internal, web]
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+      - "--innodb-buffer-pool-size=256M"
+      - "--max-connections=100"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: oficio
+      MYSQL_USER: oficio
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [internal]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      OFFICE_DOMAIN: ${OFFICE_DOMAIN}
+      LIVEKIT_DOMAIN: ${LIVEKIT_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [web]
+
+configs:
+  caddyfile:
+    content: |
+      {
+        email {$ACME_EMAIL}
+      }
+      {$OFFICE_DOMAIN} {
+        encode zstd gzip
+        header {
+          Strict-Transport-Security "max-age=31536000"
+          X-Content-Type-Options "nosniff"
+          X-Frame-Options "DENY"
+          Referrer-Policy "strict-origin-when-cross-origin"
+        }
+        reverse_proxy app:4747
+      }
+      {$LIVEKIT_DOMAIN} {
+        reverse_proxy livekit:7880
+      }
+
+volumes:
+  mysql-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  internal:
+  web:

@@ -1,0 +1,209 @@
+# Oficio — Portainer stack for Docker SWARM with an existing Traefik (v2/v3) as the edge router.
+#
+# Assumes the usual Portainer + Traefik setup: an external overlay network where Traefik listens (default name
+# `traefik_public`, change TRAEFIK_NETWORK), an entrypoint called `websecure` and a certresolver called
+# `letsencryptresolver` (change TRAEFIK_ENTRYPOINT / TRAEFIK_CERTRESOLVER if yours differ).
+#
+# Required variables: OFFICE_DOMAIN, LIVEKIT_DOMAIN, LIVEKIT_NODE_IP (public IP of the node that runs livekit),
+#   OFFICE_JWT_SECRET, MYSQL_ROOT_PASSWORD, MYSQL_PASSWORD (hex), LIVEKIT_API_KEY, LIVEKIT_API_SECRET.
+# Optional: OFICIO_VERSION, TRAEFIK_NETWORK, TRAEFIK_ENTRYPOINT, TRAEFIK_CERTRESOLVER, OFFICE_APP_NAME, OFFICE_LOGO_URL,
+#   OFFICE_ACCENT_COLOR, OFFICE_SIGN_TEXT, OFFICE_DEFAULT_LOCALE, SENDGRID_API_KEY, MAIL_FROM, METRICS_TOKEN, TZ.
+#
+# Notes for Swarm:
+#   - The app keeps the world state in memory: exactly 1 replica, stop-first updates.
+#   - LiveKit media ports are published in `mode: host` (outside the routing mesh), as WebRTC requires; pin the
+#     service to one node (placement constraint below, edit the hostname) and open 7881/tcp + 7882/udp there.
+#   - `docker stack deploy` does not support inline `configs: content:`; LiveKit is configured through LIVEKIT_CONFIG.
+#   - Volumes are local to the node: pin mysql to the same node where its volume lives.
+# Full guide: docs/deploy/portainer.md
+
+version: "3.8"
+
+services:
+  app:
+    image: ghcr.io/thiagomorello/oficio:${OFICIO_VERSION:-latest}
+    environment:
+      NODE_ENV: production
+      TZ: ${TZ:-UTC}
+      OFFICE_IN_DOCKER: "1"
+      OFFICE_HOST: 0.0.0.0
+      OFFICE_PORT: "4747"
+      OFFICE_PUBLIC_URL: https://${OFFICE_DOMAIN}
+      OFFICE_ALLOWED_HOSTS: ${OFFICE_DOMAIN}
+      OFFICE_COOKIE_SECURE: "1"
+      TRUST_PROXY: "1"
+      OFFICE_JWT_SECRET: ${OFFICE_JWT_SECRET}
+      OFFICE_APP_NAME: ${OFFICE_APP_NAME:-Oficio}
+      OFFICE_LOGO_URL: ${OFFICE_LOGO_URL:-}
+      OFFICE_ACCENT_COLOR: ${OFFICE_ACCENT_COLOR:-}
+      OFFICE_SIGN_TEXT: ${OFFICE_SIGN_TEXT:-}
+      OFFICE_DEFAULT_LOCALE: ${OFFICE_DEFAULT_LOCALE:-en}
+      DATABASE_URL: mysql://oficio:${MYSQL_PASSWORD}@mysql:3306/oficio
+      LIVEKIT_URL: wss://${LIVEKIT_DOMAIN}
+      LIVEKIT_INTERNAL_URL: http://livekit:7880
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      LIVEKIT_ROOM: oficio
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+    read_only: true
+    cap_drop: [ALL]
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 67108864
+    deploy:
+      replicas: 1
+      update_config:
+        order: stop-first
+        failure_action: rollback
+        monitor: 30s
+      rollback_config:
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=${TRAEFIK_NETWORK:-traefik_public}"
+        - "traefik.http.routers.oficio.rule=Host(`${OFFICE_DOMAIN}`)"
+        - "traefik.http.routers.oficio.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}"
+        - "traefik.http.routers.oficio.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencryptresolver}"
+        - "traefik.http.routers.oficio.middlewares=oficio-headers"
+        - "traefik.http.services.oficio.loadbalancer.server.port=4747"
+        - "traefik.http.services.oficio.loadbalancer.passHostHeader=true"
+        - "traefik.http.middlewares.oficio-headers.headers.stsSeconds=31536000"
+        - "traefik.http.middlewares.oficio-headers.headers.frameDeny=true"
+        - "traefik.http.middlewares.oficio-headers.headers.contentTypeNosniff=true"
+        - "traefik.http.middlewares.oficio-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:4747/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - traefik_public
+      - internal
+
+  livekit:
+    image: livekit/livekit-server:v1.13.11
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+      LIVEKIT_CONFIG: |
+        port: 7880
+        rtc:
+          tcp_port: 7881
+          udp_port: 7882
+          # Fixed public IP: STUN discovery and the hairpin check are unreliable on overlay networks.
+          use_external_ip: false
+          node_ip: ${LIVEKIT_NODE_IP}
+          # Answer UDP only through the docker_gwbridge interface (the one the host DNATs to).
+          ips:
+            includes:
+              - 172.18.0.0/16
+        turn:
+          enabled: false
+        room:
+          auto_create: true
+          empty_timeout: 300
+          departure_timeout: 20
+        logging:
+          level: info
+          pion_level: error
+    ports:
+      - target: 7881
+        published: 7881
+        protocol: tcp
+        mode: host
+      - target: 7882
+        published: 7882
+        protocol: udp
+        mode: host
+    read_only: true
+    cap_drop: [ALL]
+    deploy:
+      replicas: 1
+      update_config:
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      # placement:
+      #   constraints: ["node.hostname == my-node"]
+      resources:
+        limits:
+          cpus: "4"
+          memory: 2G
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=${TRAEFIK_NETWORK:-traefik_public}"
+        - "traefik.http.routers.oficio-livekit.rule=Host(`${LIVEKIT_DOMAIN}`)"
+        - "traefik.http.routers.oficio-livekit.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}"
+        - "traefik.http.routers.oficio-livekit.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencryptresolver}"
+        - "traefik.http.services.oficio-livekit.loadbalancer.server.port=7880"
+        - "traefik.http.services.oficio-livekit.loadbalancer.passHostHeader=true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:7880/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - traefik_public
+      - internal
+
+  mysql:
+    image: mysql:8.0
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+      - "--innodb-buffer-pool-size=256M"
+      - "--max-connections=100"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: oficio
+      MYSQL_USER: oficio
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    deploy:
+      replicas: 1
+      update_config:
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      # placement:
+      #   constraints: ["node.hostname == my-node"]
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - internal
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  traefik_public:
+    external: true
+    name: ${TRAEFIK_NETWORK:-traefik_public}
+  internal:
+    driver: overlay
+    attachable: false

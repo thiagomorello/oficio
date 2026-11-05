@@ -1,0 +1,47 @@
+/* Menu de contexto da mesa, popover de decoração e indicador de sala (WP9). Usa os tokens de brand.css. */
+
+/* ---- menu de contexto */
+.of-ctx { position: fixed; z-index: 800; min-width: 200px; max-width: 280px; pointer-events: auto; }
+.of-ctx li { list-style: none; }
+.of-ctx__title { padding: 6px 12px 4px; font-size: var(--fs-sm); color: var(--gray-400, #9aa0aa); text-transform: uppercase; letter-spacing: .04em; }
+.of-menu__item--danger { color: var(--red-500, #e2604f); }
+.of-ctx--confirm { padding: 12px; }
+.of-ctx__msg { margin: 0 0 12px; font-size: var(--fs-md); }
+.of-ctx__actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---- popover de decoração */
+.of-decor { position: fixed; z-index: 850; box-sizing: border-box; width: 360px; max-height: calc(100vh - 16px); overflow: auto; padding: 12px; pointer-events: auto; }
+.of-decor--modal { position: static; width: 100%; max-width: 420px; max-height: calc(100vh - 32px); }
+.of-decor__title { margin: 0 0 8px; font-size: var(--fs-lg); font-weight: 600; color: var(--white, #fff); }
+.of-decor__preview { display: block; width: 100%; height: auto; image-rendering: pixelated; border-radius: var(--radius-md); background: var(--gray-700); margin-bottom: 8px; }
+.of-decor__cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.of-decor__col-title { margin: 0 0 4px; font-size: var(--fs-sm); font-weight: 600; color: var(--gray-300, #c8c5ca); }
+.of-decor__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+.of-decor__thumb { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; min-width: 0; padding: 0; border: 1px solid var(--gray-700); border-radius: var(--radius-md); background: var(--gray-900, #121212); cursor: pointer; color: var(--gray-100); font: 400 10px/1.1 var(--font); }
+.of-decor__thumb:hover:not(:disabled) { border-color: var(--accent); }
+.of-decor__thumb:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--accent); }
+.of-decor__thumb.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.of-decor__thumb.is-disabled, .of-decor__thumb:disabled { cursor: not-allowed; opacity: .35; filter: grayscale(1); }
+.of-decor__thumb--none { grid-column: 1 / -1; aspect-ratio: auto; height: 22px; }
+.of-decor__thumb-cv { image-rendering: pixelated; max-width: 100%; max-height: 100%; }
+.of-decor__swatches { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 22px; }
+.of-decor__swatches .of-swatch { width: 20px; height: 20px; }
+.of-decor__err { margin: 8px 0 0; color: var(--red-500, #e2604f); font-size: var(--fs-sm); }
+.of-decor__actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.of-decor__spacer { flex: 1; }
+
+/* ---- indicador de sala */
+.of-room-slot { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; pointer-events: none; }
+.of-room { box-sizing: border-box; max-width: 300px; padding: 10px 12px; pointer-events: auto; font-size: var(--fs-md); }
+.of-room__head, .of-room__row { display: flex; align-items: center; gap: 8px; }
+.of-room__row { margin-top: 8px; flex-wrap: wrap; }
+.of-room__name { font-size: var(--fs-lg); color: var(--white, #fff); }
+.of-room__tag { padding: 1px 8px; border-radius: 999px; background: var(--accent-strong); color: var(--gray-800); font-size: var(--fs-sm); font-weight: 600; }
+.of-room__members { display: flex; }
+.of-room__avatar { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-right: -6px; border-radius: 50%; border: 2px solid var(--gray-800); background: var(--gray-600); color: var(--white, #fff); font-size: 10px; font-weight: 600; }
+.of-room__avatar.is-self { background: var(--accent-strong); color: var(--gray-800); }
+.of-room__count { margin-left: 8px; color: var(--gray-300, #c8c5ca); font-size: var(--fs-sm); }
+.of-room__hint { margin: 8px 0 0; font-size: var(--fs-sm); color: var(--gray-400, #9aa0aa); }
+.of-room--door { display: flex; align-items: center; gap: 10px; }
+.of-room__knocks { display: flex; flex-direction: column; gap: 8px; }
+.of-room__knock-msg { margin: 0; }

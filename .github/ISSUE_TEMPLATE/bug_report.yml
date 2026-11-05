@@ -1,0 +1,43 @@
+name: Bug report
+description: Something is broken in Oficio
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Oficio version
+      description: Shown in GET /api/health (`version`) or the image tag.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How is it installed?
+      options:
+        - docker-compose.yml (VPS)
+        - Portainer
+        - Railway / Render / Fly / DigitalOcean App Platform
+        - Coolify / Dokploy
+        - From source (npm run dev / npm start)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Output of `docker compose logs --tail=200 app` (and `livekit` if audio/video is involved). Remove secrets.
+      render: shell
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 130 on Windows 11

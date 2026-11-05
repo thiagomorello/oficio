@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+backups/
+qa-out/
+scripts/assets/.cache/
+
+# Editor/agent local config
+.claude/
+.vscode/
+.idea/

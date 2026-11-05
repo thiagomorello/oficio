@@ -1,0 +1,92 @@
+/* Página /admin: cabeçalho, estatísticas, tabela de usuários (cartões empilhados abaixo de 720 px). */
+.adm { box-sizing: border-box; min-height: 100vh; background: var(--bg); padding: 0 24px 40px; }
+.adm-header { display: flex; align-items: center; gap: 16px; padding: 16px 0; }
+.adm-logo { height: 28px; }
+.adm-title { font-size: var(--fs-xl); flex: 1; }
+.adm-back { font-size: var(--fs-sm); }
+.adm-lang { width: auto; height: 28px; font-size: var(--fs-xs); color: var(--muted); }
+.adm-main { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; max-width: 1280px; }
+.adm-tabs a { text-decoration: none; }
+
+/* /admin/mapa: o editor ocupa a altura toda da janela */
+.adm--map { height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding-bottom: 8px; overflow: hidden; }
+.adm--map .adm-header, .adm--map .adm-tabs { flex: none; }
+.adm--map .adm-header { padding: 10px 0; }
+.adm-map { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.adm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.adm-stat { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; }
+.adm-stat strong { font-size: var(--fs-2xl); font-weight: 600; color: var(--white); font-variant-numeric: tabular-nums; }
+
+.adm-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.adm-search { flex: 1; min-width: 200px; max-width: 420px; }
+
+.adm-table-wrap { overflow-x: auto; border-radius: var(--radius-md); }
+.adm-table td { vertical-align: middle; }
+.adm-table tr.is-disabled td { opacity: .6; }
+.adm-name { font-weight: 500; color: var(--white); margin-right: 6px; }
+.adm-flags { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.adm-empty { padding: 24px; text-align: center; }
+.adm-pager { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.adm-pager .of-caption { margin-right: auto; }
+
+.adm-menu { position: fixed; z-index: 950; }
+.adm-menu li { list-style: none; }
+
+.adm-form { display: flex; flex-direction: column; gap: 14px; }
+.adm-field { display: flex; flex-direction: column; gap: 6px; }
+.adm-field label, .adm-check { font-size: var(--fs-sm); font-weight: 500; color: var(--gray-100); }
+.adm-check { display: flex; align-items: center; gap: 8px; }
+.adm-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.adm-temp-box { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--gray-700); border-radius: var(--radius-md); }
+.adm-temp { flex: 1; font: 600 18px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 1px; color: var(--white); user-select: all; }
+
+@media (max-width: 900px) { .adm-stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* Mobile: a tabela vira cartões empilhados */
+@media (max-width: 720px) {
+  .adm { padding: 0 16px 32px; }
+  .adm-table, .adm-table tbody, .adm-table tr, .adm-table td { display: block; }
+  .adm-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .adm-table tbody tr { margin-bottom: 10px; padding: 8px 0; border-radius: var(--radius-md); }
+  .adm-table td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 12px; text-align: right; }
+  .adm-table td::before { content: attr(data-label); color: var(--gray-400); font-size: var(--fs-xs); text-align: left; flex: none; }
+  .adm-table td:first-child { text-align: left; }
+  .adm-table td:last-child::before { content: none; }
+  .adm-table td:last-child { justify-content: flex-end; }
+  .adm-toolbar .of-btn, .adm-search { max-width: none; }
+  .adm-search { flex-basis: 100%; }
+}
+
+/* /admin/telemetria */
+.tel-table tbody tr.tel-row { cursor: pointer; }
+.tel-table tbody tr.tel-row:hover td, .tel-table tbody tr.tel-row:focus-visible td { background: var(--surface-2); }
+.tel-table tbody tr.is-selected td { background: var(--surface-3); }
+.tel-table td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tel-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+.tel-val--ok { color: var(--green-300); }
+.tel-val--warn { color: var(--accent); }
+.tel-val--bad { color: var(--red-500); }
+.tel-val--none { color: var(--gray-300); font-weight: 400; }
+.tel-updated { margin-left: auto; }
+.tel-detail { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.tel-detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tel-detail-title { flex: 1; font-size: var(--fs-lg); color: var(--white); margin: 0; }
+.tel-spark-wrap { display: flex; flex-direction: column; gap: 4px; }
+.tel-spark { width: 100%; height: 90px; background: var(--surface-1); border-radius: var(--radius-md); }
+.tel-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tel-dot { display: inline-block; width: 10px; height: 3px; border-radius: 2px; }
+.tel-dot--rtt { background: var(--accent); }
+.tel-dot--fps { background: var(--blue-300); margin-left: 8px; }
+.tel-events-wrap { max-height: 520px; overflow: auto; }
+.tel-events td { vertical-align: top; font-size: var(--fs-sm); }
+.tel-ev-time, .tel-ev-session { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--gray-200); }
+.tel-ev-session { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.tel-ev-data { word-break: break-word; color: var(--gray-100); }
+@media (max-width: 720px) {
+  .tel-table td { white-space: normal; }
+  .tel-events, .tel-events tbody, .tel-events tr, .tel-events td { display: block; }
+  .tel-events thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .tel-events tr { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .tel-events td { padding: 2px 8px; }
+}

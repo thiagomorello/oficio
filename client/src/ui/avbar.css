@@ -1,0 +1,111 @@
+/* Barra de A/V (WP8): faixa de tiles no topo, controles no centro inferior. Tokens de brand.css. */
+.av-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; font-family: var(--font, 'Poppins', system-ui, sans-serif); }
+.av-bar[hidden] { display: none; }
+.av-bar > * { pointer-events: auto; }
+
+.av-row { display: flex; align-items: flex-start; gap: 6px; max-width: min(100vw - 32px, 1200px); }
+.av-row.is-empty { display: none; }
+.av-bar { --av-w: 208px; --av-h: 117px; --av-rows: 1; }
+.av-strip { display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--av-rows), var(--av-h)); grid-auto-columns: var(--av-w); gap: 8px; justify-content: start; align-content: start; min-width: 0; overflow-x: auto; padding: 2px; scrollbar-width: thin; }
+.av-strip:empty { display: none; }
+.av-min { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-top: 2px; padding: 0; border: 1px solid var(--gray-600, #33333a); border-radius: 50%; background: var(--gray-800, #201f23); color: var(--gray-100, #c8c5ca); cursor: pointer; transition: transform .15s, color .15s; }
+.av-min[hidden] { display: none; }
+.av-min:hover { color: var(--accent, #7c9cff); }
+.av-min:focus-visible { outline: 0; border-color: var(--accent, #7c9cff); }
+.av-bar.is-min .av-min { transform: rotate(180deg); }
+
+.av-tile { width: auto; height: auto; transition: border-color .15s; }
+.av-tile.is-speaking { border-color: var(--accent, #7c9cff); box-shadow: 0 0 0 1px var(--accent, #7c9cff); }
+.av-tile .av-tile__video { display: none; }
+.av-tile.has-video .av-tile__video { display: block; }
+.av-tile.has-video .av-tile__head { display: none; }
+.av-tile.is-self:not(.av-tile--screen) .av-tile__video { transform: scaleX(-1); }
+.av-tile--screen .av-tile__video { object-fit: contain; background: var(--black, #121212); }
+.av-tile.is-pinned { border-color: var(--accent-strong, #ffc300); }
+
+/* Palco: o tile ampliado fica no centro, grande, com a faixa pequena embaixo. */
+.av-stage { width: min(70vw, calc(70vh * 16 / 9)); max-width: 100%; }
+.av-stage[hidden] { display: none; }
+.av-stage .av-tile { width: 100%; height: auto; aspect-ratio: 16 / 9; box-shadow: var(--shadow); }
+.av-stage .av-tile__head-img { width: 120px; }
+
+/* Botões que aparecem ao passar o mouse sobre o tile. */
+.av-tile__actions { position: absolute; top: 6px; left: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity .15s; }
+.av-tile:hover .av-tile__actions, .av-tile:focus-within .av-tile__actions { opacity: 1; }
+.av-tile__btn { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 4px; border: 1px solid transparent; border-radius: 4px; background: rgba(18, 18, 18, .75); color: var(--white, #fff); cursor: pointer; }
+.av-tile__btn:hover { color: var(--accent, #7c9cff); }
+.av-tile__btn:focus-visible { outline: 0; border-color: var(--accent, #7c9cff); }
+.av-tile__btn[hidden] { display: none; }
+.av-tile__btn--stop { background: var(--red-600, #e30b2f); }
+.av-tile__btn--stop:hover { color: var(--white, #fff); background: var(--red-500, #e83f5b); }
+.av-tile__btn--stop::after { content: 'Parar'; margin-left: 4px; font-size: 11px; font-weight: 600; }
+.av-tile.is-pinned .av-tile__btn--pin { color: var(--accent, #7c9cff); }
+@media (hover: none) { .av-tile__actions { opacity: 1; } }
+
+
+.av-tile__head { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 45%, var(--gray-600, #33333a), var(--gray-800, #201f23)); }
+.av-tile__head-img { width: 60px; height: auto; image-rendering: pixelated; }
+.av-tile .of-tile__muted { display: inline-flex; padding: 3px; border-radius: 4px; background: rgba(18, 18, 18, .7); }
+.av-tile .of-tile__muted[hidden] { display: none; }
+
+.av-unlock[hidden], .av-status[hidden] { display: none; }
+.av-status { padding: 2px 10px; border-radius: var(--radius-md, 6px); background: rgba(18, 18, 18, .7); color: var(--gray-100, #c8c5ca); }
+
+.av-controls { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 800; background: var(--panel, rgba(28,28,28,.92)); border: 1px solid var(--gray-700, #2a292e); box-shadow: var(--shadow); display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 999px; }
+.av-ctrl { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 1px solid transparent; border-radius: 50%; background: var(--gray-700, #2a292e); color: var(--gray-100, #c8c5ca); cursor: pointer; transition: background-color .15s, color .15s; }
+.av-ctrl:hover:not(:disabled) { color: var(--accent, #7c9cff); }
+.av-ctrl:focus-visible { outline: 0; border-color: var(--accent, #7c9cff); }
+.av-ctrl:disabled { opacity: .4; cursor: not-allowed; }
+.av-ctrl.is-off { background: var(--red-600, #e30b2f); color: var(--white, #fff); }
+.av-ctrl.is-off:hover:not(:disabled) { background: var(--red-500, #e83f5b); color: var(--white, #fff); }
+.av-ctrl.is-active { background: var(--accent-strong, #ffc300); color: var(--gray-800, #201f23); }
+.av-ctrl--caret { width: 28px; height: 28px; background: transparent; }
+.av-leave { margin-left: 4px; border-radius: 999px; }
+.av-leave--out { background: var(--gray-700, #2a292e); color: var(--gray-100, #c8c5ca); }
+.av-leave--out:hover:not(:disabled) { background: var(--red-600, #e30b2f); color: var(--white, #fff); }
+
+.av-devices { display: flex; flex-direction: column; gap: 10px; }
+.av-devices__row { display: flex; flex-direction: column; gap: 4px; }
+.av-devices__row[hidden], .av-devices__empty[hidden] { display: none; }
+.av-devices__empty { margin: 0; }
+
+/* Fichas redondas com o avatar (minimizado, e no celular). */
+.av-bar.is-min .av-strip { display: flex; gap: 6px; overflow: visible; }
+.av-bar.is-min .av-tile { width: 44px; height: 44px; aspect-ratio: 1 / 1; border-radius: 50%; border-width: 2px; }
+.av-bar.is-min .av-tile .av-tile__video, .av-bar.is-min .av-tile.has-video .av-tile__video { display: none; }
+.av-bar.is-min .av-tile.has-video .av-tile__head { display: flex; }
+.av-bar.is-min .av-tile .of-tile__name, .av-bar.is-min .av-tile__actions { display: none; }
+.av-bar.is-min .av-tile .of-tile__muted { top: auto; right: -2px; bottom: -2px; padding: 1px; }
+.av-bar.is-min .av-tile__head-img { width: 34px; }
+
+/* Modal de dispositivos (fora da barra: <body>, acima de tudo). */
+.av-devmodal-overlay { z-index: 2000; }
+.av-devmodal { max-width: 440px; display: flex; flex-direction: column; gap: 14px; }
+.av-devmodal .of-modal__title { margin: 0; }
+.av-devmodal .av-devices, .av-devmodal .av-devices__row { display: flex; flex-direction: column; gap: 6px; }
+.av-devmodal .of-select { width: 100%; }
+.av-devmodal__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.av-devmodal__note { margin: 0; }
+.av-devmodal__note[hidden] { display: none; }
+.av-meter { height: 8px; border-radius: 4px; overflow: hidden; background: var(--gray-700, #2a292e); }
+.av-meter__bar { height: 100%; width: 0; background: var(--accent, #7c9cff); transition: width .06s linear; }
+.av-settings-devices-btn { align-self: flex-start; }
+
+@media (max-width: 48em) {
+  .av-strip { display: flex; gap: 6px; overflow: visible; }
+  .av-tile { width: 44px; height: 44px; aspect-ratio: 1 / 1; border-radius: 50%; border-width: 2px; }
+  .av-tile .av-tile__video, .av-tile.has-video .av-tile__video { display: none; }
+  .av-tile.has-video .av-tile__head { display: flex; }
+  .av-tile .of-tile__name, .av-tile__actions { display: none; }
+  .av-tile .of-tile__muted { top: auto; right: -2px; bottom: -2px; padding: 1px; }
+  .av-tile__head-img { width: 34px; }
+  /* O palco (tela compartilhada ampliada) continua com vídeo. */
+  .av-stage { width: calc(100vw - 16px); }
+  .av-stage .av-tile { width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: var(--radius, 8px); }
+  .av-stage .av-tile.has-video .av-tile__video { display: block; }
+  .av-stage .av-tile.has-video .av-tile__head { display: none; }
+  .av-stage .av-tile .of-tile__name { display: block; }
+  .av-controls { bottom: 12px; gap: 4px; padding: 4px 6px; }
+  .av-ctrl { width: 36px; height: 36px; }
+  .av-leave span { display: none; }
+}

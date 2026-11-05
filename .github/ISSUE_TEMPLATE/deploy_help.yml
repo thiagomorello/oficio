@@ -1,0 +1,43 @@
+name: Deployment help
+description: Stuck installing Oficio on a platform
+labels: [deployment, question]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - VPS with docker-compose.yml (Hostinger, DigitalOcean Droplet, Hetzner, other)
+        - Portainer (standalone)
+        - Portainer (Swarm + Traefik)
+        - Railway
+        - Render
+        - Fly.io
+        - DigitalOcean App Platform
+        - Coolify / Dokploy
+        - Kubernetes
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: step
+    attributes:
+      label: Which step of the guide fails, and how?
+      description: Link the docs/deploy/*.md section you followed and paste the exact error.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: DNS A records for OFFICE_DOMAIN and LIVEKIT_DOMAIN point to the host (Cloudflare proxy OFF)
+        - label: Firewall allows 80/tcp, 443/tcp, 7881/tcp and 7882/udp
+        - label: GET https://<OFFICE_DOMAIN>/api/health returns `"ok": true`
+        - label: Secrets were generated with scripts/gen-secrets.sh (no empty values)
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "`docker compose logs --tail=200` (remove secrets)."
+      render: shell

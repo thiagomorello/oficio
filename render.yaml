@@ -1,0 +1,42 @@
+# Render Blueprint for Oficio (docs/deploy/render.md).
+# Render has no managed MySQL: point DATABASE_URL to an external MySQL 8 (PlanetScale, TiDB Cloud, Aiven, Railway MySQL...).
+# Render has no UDP: use LiveKit Cloud (LIVEKIT_URL = wss://<project>.livekit.cloud) or a LiveKit on a VPS.
+services:
+  - type: web
+    name: oficio
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    numInstances: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: OFFICE_PUBLIC_URL
+        sync: false # https://oficio.onrender.com or your custom domain
+      - key: OFFICE_ALLOWED_HOSTS
+        sync: false # oficio.onrender.com,office.example.com
+      - key: TRUST_PROXY
+        value: "1"
+      - key: OFFICE_COOKIE_SECURE
+        value: "1"
+      - key: OFFICE_JWT_SECRET
+        generateValue: true
+      - key: OFFICE_APP_NAME
+        value: Oficio
+      - key: OFFICE_DEFAULT_LOCALE
+        value: en
+      - key: DATABASE_URL
+        sync: false # mysql://user:pass@host:3306/oficio?ssl=true (see docs/database.md)
+      - key: LIVEKIT_URL
+        sync: false # wss://<project>.livekit.cloud
+      - key: LIVEKIT_INTERNAL_URL
+        sync: false # same as LIVEKIT_URL for LiveKit Cloud
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: LIVEKIT_ROOM
+        value: oficio
+      - key: METRICS_TOKEN
+        generateValue: true
