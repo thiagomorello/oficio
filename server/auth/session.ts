@@ -1,6 +1,6 @@
 // Sessão: cookie `office_session` (JWT) -> usuário ativo, com cache LRU curto para não ir ao banco a cada requisição.
 import type { RevalidateResult } from './session-types';
-import { parse as parseCookie } from 'cookie';
+import { parseCookie } from 'cookie';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { DEFAULT_SETTINGS, type Appearance, type UserSettings } from '../../shared/model';
 import type { ServerConfig } from '../config';

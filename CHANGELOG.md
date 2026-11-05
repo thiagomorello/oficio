@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 ### Added
 - `AGENTS.md` (and `CLAUDE.md`) with a production deployment runbook and coding rules for AI coding agents; README section explaining how to use it.
 
+### Changed
+- Dependencies: zod 4, cookie 2, ws 8.22.1, livekit-server-sdk 2.19.2, vite 8.3.5, vitest 5.1; Docker image and CI on Node 26 (Node 22 remains the minimum for source installs); GitHub Actions bumped to current majors.
+
 ### Fixed
 - CI: the Docker smoke test now loads the built image into the daemon before running it.
 
