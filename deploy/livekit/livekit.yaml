@@ -22,12 +22,16 @@ rtc:
 #   APIxxxxxxxxxxxx: your-secret-at-least-32-characters
 
 turn:
-  # Only needed for networks that block everything except 443. See docs/livekit.md ("TURN").
+  # Only needed for networks that block UDP and non-standard ports. See docs/livekit.md ("TURN").
+  # In the compose stack, docker-compose.turn.yml enables this with the certificate Caddy issues for LIVEKIT_DOMAIN.
   enabled: false
-  # domain: turn.example.com
+  # domain: livekit.example.com
   # tls_port: 5349
   # udp_port: 3478
-  # external_tls: true
+  # external_tls: false            # LiveKit terminates TLS itself with the files below
+  # cert_file: /path/to/fullchain.pem
+  # key_file: /path/to/privkey.pem
+  # external_tls: true             # instead: a proxy in front terminates TLS (SNI routing) and forwards to tls_port
 
 room:
   auto_create: true

@@ -69,6 +69,8 @@ jobs:
         run: |
           docker compose -f docker-compose.yml config -q
           docker compose -f docker-compose.yml -f docker-compose.build.yml config -q
+          docker compose -f docker-compose.yml -f docker-compose.turn.yml config -q
+          docker compose -f docker-compose.yml -f docker-compose.turn.yml --profile turn-reloader config -q
           docker compose -f docker-compose.dev.yml config -q
           docker compose -f deploy/portainer/stack.yml config -q
           docker compose -f deploy/portainer/stack-swarm.yml config -q

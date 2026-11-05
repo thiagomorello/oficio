@@ -21,7 +21,7 @@ Without the three LiveKit variables the office still works: presence, movement, 
 | `LIVEKIT_URL` | `wss://livekit.example.com` | `wss://<project>.livekit.cloud` |
 | `LIVEKIT_INTERNAL_URL` | `http://livekit:7880` | same as `LIVEKIT_URL` |
 | Keys | you generate them (`gen-secrets.sh`) | the project's API key and secret from the Cloud dashboard |
-| TURN | disabled by default; you add it if needed | included |
+| TURN | opt-in overlay `docker-compose.turn.yml` (TLS on 5349, UDP on 3478, Caddy's certificate) | included, on 443 |
 | Cost | your VPS bandwidth | per-minute pricing with a free tier |
 | Good for | teams up to ~150 on one well-sized host, data sovereignty | no ops, global presence, teams spread over continents |
 
@@ -101,34 +101,93 @@ For 100+ people, or to keep media off the app host, run LiveKit elsewhere:
 
 ## TURN: when and how
 
-Normally a browser reaches the SFU directly over UDP 7882, or over TCP 7881 when UDP is blocked. Both fail only on networks that allow **nothing but 443** (strict corporate proxies, some hotel and airport Wi-Fi). For those users you need a TURN relay that listens on 443 (TLS) and relays media to the SFU.
+Normally a browser reaches the SFU directly over UDP 7882, or over TCP 7881 when UDP is blocked. Both fail on networks that block UDP **and** every non-standard port (strict corporate proxies, some hotel and airport Wi-Fi). For those users you need a TURN relay: the browser opens a TLS connection to the TURN server, which hands the media to the SFU. Browsers only use the relay when the direct paths fail, so enabling it changes nothing for everybody else.
 
-LiveKit has a built-in TURN server, disabled in the bundled config:
+LiveKit has a built-in TURN server, disabled in the bundled config. The compose stack ships an opt-in overlay, [`docker-compose.turn.yml`](../docker-compose.turn.yml), that turns it on using the certificate Caddy already issues for `LIVEKIT_DOMAIN`: no extra host name, certificate or ACME client.
+
+### Enabling TURN with the overlay (recommended)
+
+1. Open two more ports on the host firewall and on the provider's firewall: `5349/tcp` (TURN over TLS) and `3478/udp` (TURN over UDP), in addition to 80, 443, 7881/tcp and 7882/udp.
+
+   ```sh
+   sudo ufw allow 5349/tcp
+   sudo ufw allow 3478/udp
+   ```
+
+2. Start the stack with the overlay. From now on pass both `-f` flags to every `docker compose` command, or put `COMPOSE_FILE=docker-compose.yml:docker-compose.turn.yml` in `.env` so plain `docker compose` picks both up:
+
+   ```sh
+   docker compose -f docker-compose.yml -f docker-compose.turn.yml up -d
+   docker compose -f docker-compose.yml -f docker-compose.turn.yml logs -f livekit
+   ```
+
+   Expect `[turn-cert-wait] certificate found, starting livekit-server with TURN`, then LiveKit's own `Starting TURN server` line with `"turn.portTLS": 5349, "turn.portUDP": 3478`. On a brand-new install the wait lines appear first: the certificate only exists after Caddy has obtained it (DNS pointing at the host, port 80 reachable), and the wrapper polls for it for up to `TURN_CERT_WAIT_SECONDS` (default 600) before exiting and letting Docker restart the wait. The container shows as *starting* in `docker compose ps` meanwhile.
+
+3. Choose how certificate renewals reach LiveKit (next section).
+
+What the overlay does, so you can audit it:
+
+- Mounts the `caddy-data` volume read-only into the `livekit` container at `/caddy`. Caddy stores certificates under `/data/caddy/certificates/<issuer>/<domain>/<domain>.crt` and `.key`; the base Caddyfile pins the issuer to Let's Encrypt (`acme_ca`) so the directory name is predictable (`acme-v02.api.letsencrypt.org-directory`). If you change the issuer in the Caddyfile, change the paths in the overlay too.
+- Replaces the LiveKit config with a copy of the base one plus a `turn:` block: `domain: ${LIVEKIT_DOMAIN}`, `tls_port: 5349`, `udp_port: 3478`, `external_tls: false`, `cert_file`/`key_file` pointing at Caddy's files. The two configs are kept in sync by hand; both files say so in a comment.
+- Publishes `${TURN_TLS_PORT:-5349}/tcp` and `${TURN_UDP_PORT:-3478}/udp`. The same number is used on the host and in the container because LiveKit announces the port to browsers; change both through the `.env` variables, not in the compose file.
+- Wraps the image entrypoint in a small `sh` loop that waits for the certificate and key before `exec`ing `/livekit-server`.
+
+Clients discover the TURN server from the join response; nothing changes in Oficio. The relay port range LiveKit logs (`turn.relay_range_start` 30000–40000) is internal between the TURN server and the SFU in the same process and does not need to be published or opened.
+
+### Certificate renewal
+
+Let's Encrypt certificates are valid for 90 days and Caddy renews them in place, inside the `caddy-data` volume, about 30 days before expiry. LiveKit reads the files only at startup, so it must be restarted after a renewal; otherwise, roughly three months after the first start, TURN/TLS would present an expired certificate (direct UDP/TCP media is unaffected). Two ways to automate the restart; pick one:
+
+| | Host cron: [`scripts/turn-restart-on-renew.sh`](../scripts/turn-restart-on-renew.sh) | Sidecar: `--profile turn-reloader` |
+|---|---|---|
+| How | cron runs the script every 6 h; it reads the certificate's modification time inside the `caddy` container, compares it with the value saved in `./.turn-cert.mtime` and runs `docker compose restart livekit` when it changed | a `docker:cli` container (`turn-cert-reloader`) does the same loop with the certificate volume and the Docker socket mounted read-only, restarting the `livekit` container of the same compose project |
+| Privileges | nothing beyond the docker CLI you already use on the host | access to the Docker socket, which is equivalent to root on the host. The container runs read-only, without network and with every capability dropped, but a compromise of the image or the script would control Docker |
+| Setup | one crontab line | one extra flag on `up`; nothing on the host |
+
+Cron:
+
+```sh
+# every 6 hours, from the directory with docker-compose.yml and .env
+0 */6 * * * cd /opt/oficio && ./scripts/turn-restart-on-renew.sh >> turn-renew.log 2>&1
+```
+
+Sidecar:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.turn.yml --profile turn-reloader up -d
+docker compose -f docker-compose.yml -f docker-compose.turn.yml --profile turn-reloader logs turn-cert-reloader
+```
+
+Take the sidecar if you prefer not to touch the host's crontab and accept the socket access; take cron otherwise. Either way the restart interrupts audio and video for a few seconds once every ~60 days; browsers reconnect on their own. `TURN_RELOADER_INTERVAL` (seconds, default 21600) changes the sidecar's cadence.
+
+### Testing TURN
+
+1. The TLS port presents Caddy's certificate: `openssl s_client -connect livekit.example.com:5349 -servername livekit.example.com </dev/null 2>/dev/null | openssl x509 -noout -issuer -dates` prints a Let's Encrypt issuer and the current validity.
+2. LiveKit's connection tester at <https://livekit.io/connection-test> (token as in [Testing a deployment](#testing-a-deployment)) has a dedicated **TURN** step that connects with ICE restricted to relay candidates. Without the overlay it fails; with it, it must pass from any network.
+3. From a browser in the office, `chrome://webrtc-internals` shows the selected candidate pair: `relay` means media goes through TURN, `udp`/`tcp` the direct paths. `docker compose logs livekit` shows the allocations.
+
+### Limitations
+
+- **TURN/TLS listens on 5349, not 443.** Caddy owns 443 on the host's IP for the app and the signaling. Networks that permit *only* 443 still cannot reach the relay. Serving TURN on 443 needs a second public IP on the host or a separate TURN host (with its own host name and certificate), or LiveKit Cloud, which includes TURN on 443. Networks that block UDP and allow a handful of TCP ports (the common case) are covered by 5349.
+- An instance has a single `LIVEKIT_URL`: you cannot keep the self-hosted SFU for most people and send only the affected team to Cloud; it is one or the other.
+- The overlay is for `docker-compose.yml`; the Portainer stacks keep TURN disabled and need the manual configuration below.
+
+### Manual configuration (LiveKit elsewhere)
+
+When LiveKit runs on its own host, or you want a different layout, configure the `turn:` block yourself (see [`deploy/livekit/livekit.yaml`](../deploy/livekit/livekit.yaml)):
 
 ```yaml
 turn:
-  enabled: false
+  enabled: true
+  domain: livekit.example.com   # the name browsers connect to; must match the certificate
+  tls_port: 5349                # or 443 if nothing else uses it on that host
+  udp_port: 3478
+  external_tls: false           # LiveKit terminates TLS with the files below
+  cert_file: /certs/fullchain.pem
+  key_file: /certs/privkey.pem
 ```
 
-To enable it:
-
-1. Pick a **separate host name** for TURN, e.g. `turn.example.com`, pointing at the same host. TURN/TLS needs its own certificate; it cannot share Caddy's 443 for the office domain unless you use SNI routing.
-2. Configure LiveKit (in the compose `livekit_config` block or `livekit.yaml`):
-
-   ```yaml
-   turn:
-     enabled: true
-     domain: turn.example.com
-     tls_port: 5349      # or 443 if nothing else uses it on this host
-     udp_port: 3478
-     # external_tls: true   # when a proxy (Caddy/nginx with SNI) terminates TLS in front of LiveKit
-   ```
-
-   With `external_tls: false` (default), LiveKit needs the certificate and key files for `turn.example.com` itself (`cert_file`/`key_file` under `turn:`); mount them read-only into the container and renew them with your ACME tool. With `external_tls: true`, a TLS-terminating proxy (Caddy layer4/SNI, nginx `stream` with `ssl_preread`, HAProxy) forwards the `turn.example.com` SNI to LiveKit's `tls_port`.
-3. Publish the ports on the host: `5349/tcp` (or `443/tcp` if dedicated) and `3478/udp`.
-4. Restart LiveKit. Clients discover the TURN server automatically from the join response; nothing changes in Oficio.
-
-Using **443/tcp for TURN** on the same host as Caddy requires SNI-based routing in front of both (Caddy's `layer4` module or nginx `stream`), because only one process can own the port. If that is more infrastructure than you want, LiveKit Cloud includes TURN on 443 out of the box. Note that an instance has a single `LIVEKIT_URL`, so you cannot keep the self-hosted SFU for most people and send only the affected team to Cloud; it is one or the other.
+Mount the certificate and key read-only, publish `tls_port/tcp` and `udp_port/udp`, and restart LiveKit after every renewal. With `external_tls: true` a TLS-terminating proxy (Caddy `layer4`/SNI, nginx `stream` with `ssl_preread`, HAProxy) forwards the TURN host name's SNI to LiveKit's `tls_port`; that is also how 443 can be shared with a web server on the same IP, at the price of running that proxy.
 
 ## Testing a deployment
 

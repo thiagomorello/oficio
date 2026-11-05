@@ -118,6 +118,8 @@ Open only what the stack needs:
 | 443 | TCP | HTTPS and WebSockets (app and LiveKit signaling) |
 | 7881 | TCP | LiveKit media over TCP (fallback when UDP is blocked on the user's network) |
 | 7882 | UDP | LiveKit media over UDP (the normal path) |
+| 5349 | TCP | optional: TURN over TLS, only with the `docker-compose.turn.yml` overlay ([LiveKit → TURN](../livekit.md#turn-when-and-how)) |
+| 3478 | UDP | optional: TURN over UDP, only with the overlay |
 
 MySQL (3306) is never published; it is only reachable from the app container on an internal Docker network. Optionally also open 443/udp for HTTP/3; it is not required.
 
@@ -132,6 +134,8 @@ sudo ufw allow 7882/udp
 sudo ufw enable
 sudo ufw status
 ```
+
+If you enable TURN later (`docker-compose.turn.yml`), add `sudo ufw allow 5349/tcp` and `sudo ufw allow 3478/udp`.
 
 **Important:** Docker publishes container ports by writing its own iptables rules, which bypass `ufw`. In practice `ufw` does not protect ports published by containers; it protects the host's own services (SSH). So also configure the firewall your **provider** offers in its control panel (Hetzner "Firewalls", DigitalOcean "Cloud Firewalls", Hostinger "Firewall", AWS security groups...) with the same five rules. The provider firewall sits in front of the server and is not affected by Docker.
 

@@ -72,6 +72,10 @@ Com o `docker-compose.yml` você normalmente nunca escreve `DATABASE_URL` à mã
 | `LIVEKIT_NODE_IP` | IPv4 | vazio | recomendada | só compose: IP público anunciado nos candidatos ICE (`rtc.node_ip`). Vazio significa que o LiveKit o descobre via STUN (`use_external_ip: true`). **Obrigatório** em Docker Swarm / redes overlay, onde a descoberta não é confiável. |
 | `LIVEKIT_TCP_PORT` | inteiro | `7881` | não | só compose: porta do host publicada para ICE-TCP. |
 | `LIVEKIT_UDP_PORT` | inteiro | `7882` | não | só compose: porta do host publicada para mídia sobre UDP. |
+| `TURN_TLS_PORT` | inteiro | `5349` | não | só `docker-compose.turn.yml`: porta TURN/TLS (mesmo número no host e no container). Veja [LiveKit → TURN](livekit.md#turn-quando-e-como). |
+| `TURN_UDP_PORT` | inteiro | `3478` | não | só `docker-compose.turn.yml`: porta TURN/UDP (mesmo número no host e no container). |
+| `TURN_CERT_WAIT_SECONDS` | inteiro | `600` | não | só `docker-compose.turn.yml`: quanto tempo o `livekit` espera pelo certificado do Caddy no primeiro boot antes de sair e tentar de novo. |
+| `TURN_RELOADER_INTERVAL` | inteiro | `21600` | não | só `docker-compose.turn.yml`: com que frequência o sidecar opcional `turn-cert-reloader` verifica o certificado (segundos). |
 
 Quando qualquer uma de `LIVEKIT_URL`, `LIVEKIT_API_KEY` ou `LIVEKIT_API_SECRET` está faltando, o servidor registra `LiveKit não configurado`, `/api/health` informa `"livekit": false`, e o escritório roda sem áudio/vídeo (presença e chat continuam funcionando). Mais em [LiveKit](livekit.md).
 

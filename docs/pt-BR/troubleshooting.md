@@ -49,6 +49,7 @@ curl -s https://office.example.com/api/health
 3. Garanta que `livekit.example.com` está como DNS only no Cloudflare.
 4. Teste com <https://livekit.io/connection-test> usando um token gerado como em [LiveKit → Testando](livekit.md#testando-um-deploy). Ele diz se UDP, TCP ou nenhum dos dois funciona. Se só o TCP funciona, o áudio funciona com mais latência e a sua regra de UDP está errada; se nenhum, o IP anunciado está errado ou as portas estão fechadas.
 5. Em `chrome://webrtc-internals`, olhe o par de candidatos ICE selecionado para a conexão do LiveKit.
+6. Se tudo acima está certo e só as pessoas de uma rede restrita (proxy corporativo, Wi-Fi de hotel) são afetadas, a rede delas bloqueia o UDP e portas fora do padrão. Habilite o TURN sobre TLS com o overlay `docker-compose.turn.yml` e abra 5349/tcp + 3478/udp; veja [LiveKit → TURN](livekit.md#turn-quando-e-como). A etapa **TURN** do testador precisa então passar a partir dessa rede.
 
 ### O login devolve `503`
 
