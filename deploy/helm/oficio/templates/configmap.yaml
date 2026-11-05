@@ -45,12 +45,18 @@ data:
   MYSQL_PORT: "3306"
   MYSQL_USER: {{ .Values.mysql.auth.username | quote }}
   MYSQL_DATABASE: {{ .Values.mysql.auth.database | quote }}
-  {{- else if not (include "oficio.mysql.externalUrlMode" .) }}
+  {{- else }}
+  {{- if not (include "oficio.mysql.externalUrlMode" .) }}
   MYSQL_HOST: {{ required "Set mysql.external.host (or mysql.external.databaseUrl) when mysql.enabled=false." .Values.mysql.external.host | quote }}
   MYSQL_PORT: {{ .Values.mysql.external.port | toString | quote }}
   MYSQL_USER: {{ .Values.mysql.external.username | quote }}
   MYSQL_DATABASE: {{ .Values.mysql.external.database | quote }}
+  {{- end }}
+  {{- /* TLS settings apply to both forms (URL and parts). */}}
   {{- with .Values.mysql.external.ssl }}
   MYSQL_SSL: {{ . | quote }}
+  {{- end }}
+  {{- if include "oficio.mysql.caConfigMap" . }}
+  MYSQL_SSL_CA: "/etc/oficio/mysql-ca/ca.crt"
   {{- end }}
   {{- end }}

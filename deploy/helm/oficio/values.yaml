@@ -44,7 +44,7 @@ office:
   accentColor: ""
   # Text on the reception sign in the map (max 14 ASCII chars). Empty = appName.
   signText: ""
-  # Default UI language for new visitors, server messages and e-mails: en | pt-BR.
+  # Default UI language for new visitors, server messages and e-mails: en | pt-BR | es.
   defaultLocale: en
   # Name of the single LiveKit room the office uses. Change only if several instances share one LiveKit server.
   livekitRoom: oficio
@@ -159,7 +159,13 @@ mysql:
     existingSecretKey: mysql-password
     # TLS to the database: "" (plain), "required" (validates the server certificate, what managed databases need)
     # or "skip-verify" (encrypts without validation; acceptable only as a documented temporary measure).
+    # Applies to both forms (URL and parts).
     ssl: ""
+    # CA bundle (PEM) that signed the database certificate, for private or corporate CAs (MYSQL_SSL_CA; implies TLS
+    # with validation). Either paste the PEM here (stored in a ConfigMap and mounted read-only) or name an existing
+    # ConfigMap that holds it under the key ca.crt. Leave both empty for public CAs.
+    sslCa: ""
+    sslCaConfigMap: ""
 
 # ------------------------------------------------------------------------------------------------------------ livekit
 

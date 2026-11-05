@@ -77,7 +77,8 @@ Every value is commented in [`values.yaml`](values.yaml). The ones you will actu
 | `mysql.external.databaseUrl` | `""` | Full `DATABASE_URL` for an external MySQL (wins over the parts). |
 | `mysql.external.host` / `.port` / `.database` / `.username` / `.password` | `""` / `3306` / `oficio` / `oficio` / `""` | External MySQL as `MYSQL_*` parts (the app URL-encodes them). |
 | `mysql.external.existingSecret` / `.existingSecretKey` | `""` / `mysql-password` | Secret holding the external password. |
-| `mysql.external.ssl` | `""` | `MYSQL_SSL`: `required` or `skip-verify`. |
+| `mysql.external.ssl` | `""` | `MYSQL_SSL`: `required` or `skip-verify` (both forms). |
+| `mysql.external.sslCa` / `.sslCaConfigMap` | `""` / `""` | CA bundle for a private/corporate CA (`MYSQL_SSL_CA`): PEM pasted into values (stored in a ConfigMap) or an existing ConfigMap with key `ca.crt`. |
 | `livekit.enabled` | `true` | Bundled LiveKit server. |
 | `livekit.publicUrl` | `wss://<livekit.ingress.host>` | `LIVEKIT_URL` browsers use. Required with the bundled LiveKit. |
 | `livekit.hostNetwork` | `true` | Bind media ports on the node (one LiveKit Pod per node, open the ports on the node). |

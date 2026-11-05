@@ -163,6 +163,19 @@ Whether the external MySQL is given as a full URL (DATABASE_URL) rather than par
 {{- end }}
 
 {{/*
+Name of the ConfigMap holding the CA bundle for the external MySQL (key ca.crt), or empty when no CA is configured.
+*/}}
+{{- define "oficio.mysql.caConfigMap" -}}
+{{- if not .Values.mysql.enabled -}}
+{{- if .Values.mysql.external.sslCaConfigMap -}}
+{{- .Values.mysql.external.sslCaConfigMap -}}
+{{- else if .Values.mysql.external.sslCa -}}
+{{- printf "%s-mysql-ca" (include "oficio.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Ingress annotations shared by the app and the LiveKit Ingress (WebSocket presets + cert-manager).
 Usage: include "oficio.ingressAnnotations" (dict "ctx" $ "extra" .Values.ingress.annotations)
 */}}

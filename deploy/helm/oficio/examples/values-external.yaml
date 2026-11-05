@@ -53,6 +53,11 @@ mysql:
     existingSecret: oficio-mysql-external
     existingSecretKey: mysql-password
     ssl: required
+    # Private or corporate CA: paste the PEM bundle (or point sslCaConfigMap at a ConfigMap with key ca.crt).
+    # sslCa: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+    #   -----END CERTIFICATE-----
 
 livekit:
   enabled: false

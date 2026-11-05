@@ -88,10 +88,23 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            {{- if include "oficio.mysql.caConfigMap" . }}
+            - name: mysql-ca
+              mountPath: /etc/oficio/mysql-ca
+              readOnly: true
+            {{- end }}
       volumes:
         - name: tmp
           emptyDir:
             sizeLimit: 64Mi
+        {{- if include "oficio.mysql.caConfigMap" . }}
+        - name: mysql-ca
+          configMap:
+            name: {{ include "oficio.mysql.caConfigMap" . }}
+            items:
+              - key: ca.crt
+                path: ca.crt
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
