@@ -77,6 +77,7 @@ Every HTTP request passes through the same pipeline in `app-factory.ts`:
 - A small LRU cache (500 entries, 5 minutes) avoids a database read on every request; connected users are periodically revalidated against the database.
 - **Rate limits** (in-memory, sliding window, 10 attempts per 10 minutes): login failures per `IP|email`; `forgot` requests per IP (every request counts); password changes per user. Blocked callers get `429` with `Retry-After`. The client IP comes from `X-Forwarded-For` only when `TRUST_PROXY=1`.
 - **Password reset**: `forgot` creates a random token, stores only its SHA-256 (`password_tokens`, kind `reset`, 1 hour, single-use) and e-mails `OFFICE_PUBLIC_URL/login?reset=<token>&lang=<locale>`. Without a mailer the endpoint answers `{ok: true, manual: true}` and the UI tells the person to ask an admin. Passwords must be at least 8 characters and different from the e-mail.
+- **Single sign-on (OIDC)**: `GET /api/auth/oidc/start` stores `state`, `nonce` and the PKCE verifier in a signed 10-minute cookie (`office_oidc`) and redirects to the provider; `GET /api/auth/oidc/callback` validates them, exchanges the code with `openid-client`, finds the account by `external_id = oidc:<issuer>|<sub>` or links/creates it by e-mail, applies the admin claim mapping and issues the same `office_session` cookie. Provider metadata is discovered lazily and cached. Details in [Single sign-on](sso.md).
 
 ## WebSocket protocol
 

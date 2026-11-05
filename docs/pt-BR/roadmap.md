@@ -10,7 +10,7 @@ Para onde o Oficio provavelmente vai depois da 0.1. Esta é uma lista de direç�
 
 ## Identidade e acesso
 
-- **SSO / OIDC.** Entrar com um provedor de identidade (Google Workspace, Microsoft Entra ID, Keycloak, Authentik…) via OpenID Connect, com criação de conta just-in-time e mapeamento de grupo para administrador, ao lado das contas existentes de e-mail/senha e da sincronização via `import-json`.
+- **SSO / OIDC.** Entregue (não lançado): entrar com um provedor OpenID Connect (Google Workspace, Microsoft Entra ID, Keycloak, Authentik…), com criação de conta just-in-time, vínculo pelo e-mail e mapeamento de grupo para administrador, ao lado das contas de e-mail/senha e da sincronização via `import-json`. Veja [Login único](sso.md). Possíveis continuações: vários provedores ao mesmo tempo, reavaliar os grupos a cada login (incluindo rebaixamento), desvincular uma conta pelo painel, provisionamento SCIM.
 - **Gestão de sessões para administradores.** Ver e revogar as sessões ativas de um usuário; tempo de vida de sessão configurável.
 
 ## Idiomas

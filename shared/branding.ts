@@ -31,11 +31,23 @@ export const DEFAULT_BRANDING: BrandingConfig = {
 /** Rótulo especial de placa no mapa: desenha o logo/placa da marca em vez de texto. */
 export const BRAND_SIGN_LABEL = '{brand}';
 
+/** Login único (OIDC) como o cliente o vê: só o que a página de login precisa, nunca segredos. */
+export interface PublicOidcConfig {
+  enabled: boolean;
+  /** Rótulo do botão ("Continue with {label}"). */
+  label: string;
+  /** Falso quando OIDC_PASSWORD_LOGIN=0: o formulário de e-mail/senha fica escondido e desativado. */
+  passwordLogin: boolean;
+}
+
+export const DEFAULT_PUBLIC_OIDC: PublicOidcConfig = { enabled: false, label: '', passwordLogin: true };
+
 /** O que o servidor expõe em `GET /api/config` (público, sem segredos). */
 export interface PublicConfig extends BrandingConfig {
   defaultLocale: Locale;
   locales: readonly Locale[];
   version: string;
+  oidc: PublicOidcConfig;
 }
 
 export const MAX_APP_NAME = 40;

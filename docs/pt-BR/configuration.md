@@ -1,13 +1,13 @@
 # Configuração
 
-O Oficio é configurado inteiramente por variáveis de ambiente, lidas uma vez na inicialização por `server/config.ts`. Esta página lista todas as variáveis nos mesmos grupos do [`.env.example`](../../.env.example), com tipo, padrão, se é obrigatória e o que faz; depois explica marca, idiomas, LiveKit, e-mail, métricas, configurações só de desenvolvimento e como o `docker-compose.yml` deriva `DATABASE_URL` e as URLs públicas a partir de `OFFICE_DOMAIN` e `LIVEKIT_DOMAIN`.
+O Oficio é configurado inteiramente por variáveis de ambiente, lidas uma vez na inicialização por `server/config.ts`. Esta página lista todas as variáveis nos mesmos grupos do [`.env.example`](../../.env.example), com tipo, padrão, se é obrigatória e o que faz; depois explica marca, idiomas, LiveKit, login único, e-mail, métricas, configurações só de desenvolvimento e como o `docker-compose.yml` deriva `DATABASE_URL` e as URLs públicas a partir de `OFFICE_DOMAIN` e `LIVEKIT_DOMAIN`.
 
 ## Como os valores são lidos
 
 - Strings vazias contam como "não definido". Espaços em branco nas pontas são removidos.
 - Variáveis booleanas aceitam `1`, `true`, `yes`, `sim`, `on` (sem distinção de maiúsculas) como verdadeiro; qualquer outra coisa é falso.
 - Na inicialização o servidor registra um **aviso** para cada valor ausente ou inválido sem o qual ele consegue viver (por exemplo, uma cor de destaque inválida volta ao padrão). Valores ausentes sem os quais ele não consegue viver são registrados como erros: sem `DATABASE_URL` o processo encerra (exceto em `--dev`), e sem `OFFICE_JWT_SECRET` toda chamada a `/api/*` responde `503` e a página de login não consegue autenticar ninguém.
-- `GET /api/config` (público, sem segredos) mostra os valores de marca e idioma que o servidor realmente aplicou, mais a versão. Use-o para confirmar que uma mudança entrou.
+- `GET /api/config` (público, sem segredos) mostra os valores de marca e idioma que o servidor realmente aplicou, mais a versão e `oidc: { enabled, label, passwordLogin }` do login único. Use-o para confirmar que uma mudança entrou.
 - Reinicie o app depois de alterar o `.env`: `docker compose up -d` recria só os containers cujo ambiente mudou.
 
 ## Servidor HTTP
@@ -42,6 +42,23 @@ Detalhes e dicas em [Detalhes da marca](#detalhes-da-marca) abaixo.
 | `OFFICE_JWT_SECRET` | string aleatória (hex, 64 caracteres recomendados) | não definido | **sim** | Assina o cookie de sessão (`office_session`, HS256, 30 dias). Sem ele o endpoint de login responde `503`. Em `--dev` um segredo efêmero é gerado, então as sessões se perdem ao reiniciar. Gere com `openssl rand -hex 32`. Alterá-lo desconecta todo mundo. |
 | `OFFICE_COOKIE_SECURE` | booleano | `1` | não | Define a flag `Secure` no cookie de sessão, para que os navegadores só o enviem por HTTPS. Defina `0` **somente** para desenvolvimento local em HTTP puro; em HTTP com `1` o navegador descarta o cookie e você volta em loop para a página de login. |
 | `LOGIN_MASTER_PASSWORD` | string | não definido | não | Uma senha que entra em qualquer conta. **Só respeitada em `--dev`**; fora do modo dev é ignorada e um aviso é registrado. Mantenha vazia em produção. |
+
+## Login único (OpenID Connect, opcional)
+
+| Variável | Tipo | Padrão | Obrigatória | Descrição |
+|---|---|---|---|---|
+| `OIDC_ISSUER` | URL | não definido | sim para SSO | Issuer do provedor de identidade (base de `/.well-known/openid-configuration`), por exemplo `https://accounts.google.com`, `https://login.microsoftonline.com/<tenant-id>/v2.0`, `https://keycloak.example.com/realms/<realm>`. Precisa ser `https://` (`http://` puro só em `--dev`). |
+| `OIDC_CLIENT_ID` | string | não definido | sim para SSO | Client ID da aplicação registrada no provedor. |
+| `OIDC_CLIENT_SECRET` | string | não definido | sim para SSO | Client secret dessa aplicação. |
+| `OIDC_SCOPES` | separados por espaço | `openid email profile` | não | Escopos pedidos. `openid` é acrescentado se faltar. Adicione um escopo de grupos se o provedor precisar dele para a claim de admin. |
+| `OIDC_BUTTON_LABEL` | string, máx. 40 caracteres | nome do provedor a partir do host do issuer (`Google`, `Microsoft`, `Keycloak`, `Authentik` ou o domínio com inicial maiúscula), senão `Single sign-on` | não | Texto do botão de login: "Continuar com …". |
+| `OIDC_AUTO_CREATE` | booleano | `1` | não | Cria a conta no primeiro login. `0`: só contas existentes (pelo e-mail ou já vinculadas) conseguem entrar. |
+| `OIDC_ALLOWED_DOMAINS` | domínios separados por vírgula | vazio (qualquer) | não | Domínios de e-mail aceitos, conferidos contra a claim `email`, sem diferenciar maiúsculas. |
+| `OIDC_ADMIN_CLAIM` | string | não definido | não | Claim (por exemplo `groups`, `roles`) cujos valores concedem acesso de administrador. Defina junto com `OIDC_ADMIN_VALUES`. O mapeamento só concede: nunca remove o acesso de administrador de contas promovidas localmente. |
+| `OIDC_ADMIN_VALUES` | separados por vírgula | não definido | não | Valores dessa claim que tornam a pessoa administradora (por exemplo `oficio-admins`, ou o GUID de um grupo no Entra ID). |
+| `OIDC_PASSWORD_LOGIN` | booleano | `1` | não | `0` esconde e desativa o formulário de e-mail/senha enquanto o login único está ativo (`POST /api/auth/login` responde `403`). A CLI e `LOGIN_MASTER_PASSWORD` em `--dev` continuam funcionando. Ignorado, com aviso, quando o login único está desligado. |
+
+O login único só fica ativo quando as três primeiras estão todas definidas; um conjunto parcial registra um aviso no boot e o mantém desligado. A URI de redirecionamento a registrar no provedor é `https://<OFFICE_DOMAIN>/api/auth/oidc/callback` (montada a partir de `OFFICE_PUBLIC_URL`). Configuração provedor a provedor, regras de vínculo de conta e códigos de erro: [Login único](sso.md).
 
 ## Banco de dados MySQL
 
@@ -203,6 +220,10 @@ TZ=UTC
 SENDGRID_API_KEY=
 MAIL_FROM=
 METRICS_TOKEN=<openssl rand -hex 24>
+
+OIDC_ISSUER=
+OIDC_CLIENT_ID=
+OIDC_CLIENT_SECRET=
 ```
 
 Mantenha o `.env` fora do controle de versão (ele está no gitignore) e legível somente pelo usuário que faz o deploy (`chmod 600 .env`, o que o `gen-secrets.sh` faz por você).

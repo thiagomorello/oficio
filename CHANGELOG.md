@@ -8,6 +8,11 @@ All notable changes to this project are documented here. The format follows
 ### Added
 - `MYSQL_SSL_CA` (or `?sslca=` in `DATABASE_URL`): validate the database certificate against a private or corporate CA bundle instead of using `skip-verify`.
 - Spanish (`es`) interface language: every message of every area translated, selectable on the login page and in settings, honoured by `Accept-Language` (`es-*`), e-mails and the default map; `OFFICE_DEFAULT_LOCALE=es` accepted. `defineMessages` now takes a map of locales so adding a language is one more entry per file. ([#15](https://github.com/thiagomorello/oficio/issues/15))
+- Single sign-on with OpenID Connect (`OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_SCOPES`, `OIDC_BUTTON_LABEL`,
+  `OIDC_AUTO_CREATE`, `OIDC_ALLOWED_DOMAINS`, `OIDC_ADMIN_CLAIM`/`OIDC_ADMIN_VALUES`, `OIDC_PASSWORD_LOGIN`): authorization code
+  flow with PKCE via `openid-client`, routes `GET /api/auth/oidc/start` and `/callback`, accounts created or linked by e-mail on
+  first sign-in, admin mapping from a group claim, optional password-form shutdown, `oidc` block in `GET /api/config`, `SSO`
+  source badge in the admin user list, and the guide `docs/sso.md` (Google Workspace, Entra ID, Keycloak, Authentik). Closes #13.
 - `AGENTS.md` (and `CLAUDE.md`) with a production deployment runbook and coding rules for AI coding agents; README section explaining how to use it.
 - Opt-in TURN for the compose stack (#17): `docker-compose.turn.yml` enables LiveKit's embedded TURN server (TLS on 5349/tcp, UDP on 3478/udp) with the certificate Caddy already issues for `LIVEKIT_DOMAIN`, waits for that certificate on the first boot, and offers two ways to restart LiveKit after renewals: `scripts/turn-restart-on-renew.sh` for host cron or the `turn-cert-reloader` sidecar (`--profile turn-reloader`, Docker socket). New variables `TURN_TLS_PORT`, `TURN_UDP_PORT`, `TURN_CERT_WAIT_SECONDS`, `TURN_RELOADER_INTERVAL`; docs for ports, firewall, testing and limitations in both languages; CI validates the overlay.
 

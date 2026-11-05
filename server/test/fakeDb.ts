@@ -117,10 +117,11 @@ export function createFakeRepos(opts: FakeOptions = {}): Repos {
       async createLocal(c) {
         const email = c.email.trim().toLowerCase();
         if (emailTaken(email)) throw Object.assign(new Error('Duplicate entry'), { code: 'ER_DUP_ENTRY' });
+        if (c.external_id && [...users.values()].some((u) => u.external_id === c.external_id)) throw Object.assign(new Error('Duplicate entry'), { code: 'ER_DUP_ENTRY' });
         const t = bump(stamp());
         const id = ++userSeq;
         const row: UserRow = {
-          id, external_id: null, email, name: c.name, display_name: c.display_name ?? null, password_hash: c.password_hash, password_version: 1,
+          id, external_id: c.external_id ?? null, email, name: c.name, display_name: c.display_name ?? null, password_hash: c.password_hash, password_version: 1,
           must_change_password: !!c.must_change_password, role_name: c.role_name ?? null, is_admin: !!c.is_admin, status: 'active',
           appearance: null, settings: null, last_seen_at: null, created_at: t, updated_at: t,
         };

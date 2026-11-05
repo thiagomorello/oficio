@@ -1,13 +1,13 @@
 # Configuration
 
-Oficio is configured entirely through environment variables, read once at boot by `server/config.ts`. This page lists every variable in the same groups as [`.env.example`](../.env.example), with type, default, whether it is required, and what it does; then it explains branding, languages, LiveKit, e-mail, metrics, development-only settings, and how `docker-compose.yml` derives `DATABASE_URL` and the public URLs from `OFFICE_DOMAIN` and `LIVEKIT_DOMAIN`.
+Oficio is configured entirely through environment variables, read once at boot by `server/config.ts`. This page lists every variable in the same groups as [`.env.example`](../.env.example), with type, default, whether it is required, and what it does; then it explains branding, languages, LiveKit, single sign-on, e-mail, metrics, development-only settings, and how `docker-compose.yml` derives `DATABASE_URL` and the public URLs from `OFFICE_DOMAIN` and `LIVEKIT_DOMAIN`.
 
 ## How values are read
 
 - Empty strings count as "not set". Whitespace is trimmed.
 - Boolean variables accept `1`, `true`, `yes`, `sim`, `on` (case-insensitive) as true; anything else is false.
 - At boot the server logs a **warning** for every missing or invalid value it can live without (for example an invalid accent color falls back to the default). Missing values it cannot live without are logged as errors: without `DATABASE_URL` the process exits (except in `--dev`), and without `OFFICE_JWT_SECRET` every `/api/*` call answers `503` and the login page cannot sign anyone in.
-- `GET /api/config` (public, no secrets) shows the branding and language values the server actually applied, plus the version. Use it to confirm a change landed.
+- `GET /api/config` (public, no secrets) shows the branding and language values the server actually applied, plus the version and `oidc: { enabled, label, passwordLogin }` for single sign-on. Use it to confirm a change landed.
 - Restart the app after changing `.env`: `docker compose up -d` recreates only the containers whose environment changed.
 
 ## HTTP server
@@ -42,6 +42,23 @@ Details and tips in [Branding](#branding-details) below.
 | `OFFICE_JWT_SECRET` | random string (hex, 64 chars recommended) | unset | **yes** | Signs the session cookie (`office_session`, HS256, 30 days). Without it the login endpoint answers `503`. In `--dev` an ephemeral secret is generated, so sessions are lost on restart. Generate with `openssl rand -hex 32`. Changing it signs everyone out. |
 | `OFFICE_COOKIE_SECURE` | boolean | `1` | no | Sets the `Secure` flag on the session cookie, so browsers only send it over HTTPS. Set `0` **only** for local development over plain HTTP; on HTTP with `1` the browser drops the cookie and you loop back to the login page. |
 | `LOGIN_MASTER_PASSWORD` | string | unset | no | A password that logs into any account. **Only honoured in `--dev`**; outside dev mode it is ignored and a warning is logged. Keep it empty in production. |
+
+## Single sign-on (OpenID Connect, optional)
+
+| Variable | Type | Default | Required | Description |
+|---|---|---|---|---|
+| `OIDC_ISSUER` | URL | unset | yes for SSO | Issuer of the identity provider (base of `/.well-known/openid-configuration`), e.g. `https://accounts.google.com`, `https://login.microsoftonline.com/<tenant-id>/v2.0`, `https://keycloak.example.com/realms/<realm>`. Must be `https://` (plain `http://` only in `--dev`). |
+| `OIDC_CLIENT_ID` | string | unset | yes for SSO | Client ID of the application registered at the provider. |
+| `OIDC_CLIENT_SECRET` | string | unset | yes for SSO | Client secret of that application. |
+| `OIDC_SCOPES` | space-separated | `openid email profile` | no | Scopes requested. `openid` is added when missing. Add a groups scope if the provider needs it for the admin claim. |
+| `OIDC_BUTTON_LABEL` | string, max 40 chars | provider name from the issuer host (`Google`, `Microsoft`, `Keycloak`, `Authentik`, or the capitalised domain), else `Single sign-on` | no | Text of the login button: "Continue with …". |
+| `OIDC_AUTO_CREATE` | boolean | `1` | no | Create an account on the first sign-in. `0`: only existing accounts (by e-mail or already linked) can sign in. |
+| `OIDC_ALLOWED_DOMAINS` | comma-separated domains | empty (any) | no | E-mail domains accepted, checked against the `email` claim, case-insensitive. |
+| `OIDC_ADMIN_CLAIM` | string | unset | no | Claim (e.g. `groups`, `roles`) whose values grant administrator access. Set together with `OIDC_ADMIN_VALUES`. The mapping only grants: it never removes administrator access from accounts promoted locally. |
+| `OIDC_ADMIN_VALUES` | comma-separated | unset | no | Values of that claim that make the person an administrator (e.g. `oficio-admins`, or a group GUID with Entra ID). |
+| `OIDC_PASSWORD_LOGIN` | boolean | `1` | no | `0` hides and disables the e-mail/password form while single sign-on is enabled (`POST /api/auth/login` answers `403`). The CLI and `LOGIN_MASTER_PASSWORD` in `--dev` keep working. Ignored, with a warning, when single sign-on is off. |
+
+Single sign-on is enabled only when the first three are all set; a partial set logs a warning at boot and keeps it off. The redirect URI to register at the provider is `https://<OFFICE_DOMAIN>/api/auth/oidc/callback` (built from `OFFICE_PUBLIC_URL`). Provider-by-provider setup, account linking rules and error codes: [Single sign-on](sso.md).
 
 ## MySQL database
 
@@ -203,6 +220,10 @@ TZ=UTC
 SENDGRID_API_KEY=
 MAIL_FROM=
 METRICS_TOKEN=<openssl rand -hex 24>
+
+OIDC_ISSUER=
+OIDC_CLIENT_ID=
+OIDC_CLIENT_SECRET=
 ```
 
 Keep `.env` out of version control (it is gitignored) and readable only by the deploying user (`chmod 600 .env`, which `gen-secrets.sh` does for you).

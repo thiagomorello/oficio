@@ -192,7 +192,7 @@ O relatório é uma tabela `action / email / note` seguida de totais; hashes nun
 4. Rodar o mesmo arquivo de novo é seguro: `external_id`s existentes são atualizados, nada é duplicado. Isso torna uma sincronização noturna a partir de uma exportação do RH uma configuração razoável.
 5. Remova o arquivo de `/tmp` depois, se ele continha senhas em texto puro (`docker compose exec app rm /tmp/team.json`; `/tmp` é um tmpfs e também é limpo no restart).
 
-Usuários importados aparecem com origem `imported` na lista de administração. O primeiro login deles usa a senha que você importou; eles **não** são forçados a trocá-la, a menos que você a redefina.
+Usuários importados aparecem com origem `imported` na lista de administração. O primeiro login deles usa a senha que você importou; eles **não** são forçados a trocá-la, a menos que você a redefina. Contas que entraram pelo [login único](sso.md) mostram a origem `SSO`; redefinir a senha delas funciona do mesmo jeito e permite que usem o formulário de senha quando ele estiver ativo.
 
 ## Checklist de rotina
 

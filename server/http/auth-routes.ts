@@ -70,6 +70,11 @@ export function createAuthRoutes(ctx: RouteContext): RouteHandler {
       const key = `${clientIp(req, config.trustProxy)}|${email}`;
       const wait = loginLimiter.blockedFor(key);
       if (wait) return tooMany(res, tr, wait);
+      // OIDC_PASSWORD_LOGIN=0: só a senha mestra de desenvolvimento passa (create-admin e LOGIN_MASTER_PASSWORD continuam úteis).
+      if (config.oidc.enabled && !config.oidc.passwordLogin && !(master !== undefined && (await verify(password, DUMMY_HASH, master)))) {
+        sendJson(res, 403, { code: 'password_login_disabled', error: tr.t('server.auth.passwordLoginDisabled') });
+        return true;
+      }
       const user = await repos.users.byEmail(email);
       const ok = await verify(password, user?.password_hash ?? DUMMY_HASH, user ? master : undefined);
       if (!user || !ok) {

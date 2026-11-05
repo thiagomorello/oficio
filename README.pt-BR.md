@@ -39,6 +39,8 @@ nome, logo e cores.
 - **Chat com escopos.** Todo mundo, a sala atual ou as pessoas próximas. Histórico guardado no banco de dados.
 - **Editor de avatar.** Cabelo, pele, roupa, acessórios, crachá; presets e um aleatorizador.
 - **Painel de administração.** Convide e gerencie usuários, redefina senhas, veja quem está online, painel de telemetria.
+- **Login único (OIDC).** Entre com Google Workspace, Microsoft Entra ID, Keycloak, Authentik ou qualquer provedor OpenID
+  Connect, ao lado das contas de e-mail/senha; contas são criadas ou vinculadas no primeiro login, admins podem vir de uma claim de grupo.
 - **Editor de mapa.** Desenhe o seu próprio escritório no navegador: pisos, paredes, móveis, salas, mesas; versões e publicação.
 - **Whitelabel.** Nome, logo, cor de destaque e a placa da recepção vêm de variáveis de ambiente.
 - **Três idiomas.** Inglês, português do Brasil e espanhol; cada pessoa escolhe o seu. Adicionar um idioma é um PR.
@@ -115,6 +117,7 @@ da plataforma); ele não consegue abrir portas nem criar registros DNS por você
 - [Configuração](docs/pt-BR/configuration.md) — todas as variáveis de ambiente, marca, idiomas.
 - [Arquitetura](docs/pt-BR/architecture.md) — como as peças conversam entre si e por que há uma única réplica do app.
 - [Guia do administrador](docs/pt-BR/admin-guide.md) — usuários, editor de mapa, telemetria, CLI.
+- [Login único](docs/pt-BR/sso.md) — OpenID Connect com Google Workspace, Entra ID, Keycloak, Authentik; vínculo de contas, mapeamento de admin.
 - [LiveKit](docs/pt-BR/livekit.md) — auto-hospedado vs cloud, portas, TURN, testando uma conexão.
 - [Banco de dados](docs/pt-BR/database.md) — MySQL incluído vs serviços gerenciados.
 - [Proxy reverso e TLS](docs/pt-BR/reverse-proxy.md) — Caddy, Traefik, nginx, Cloudflare.

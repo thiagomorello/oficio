@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { hash, tempPassword } from '../auth/password';
 import { templates } from '../auth/mailer';
+import { isOidcExternalId } from '../auth/oidc';
 import type { Locale } from '../i18n';
 import type { UserRow } from '../db/types';
 import { HttpError, readJson, sendJson } from './app';
@@ -14,7 +15,8 @@ export interface AdminUserRow {
   roleName: string | null;
   isAdmin: boolean;
   status: 'active' | 'disabled';
-  source: 'imported' | 'local';
+  /** `sso` = conta vinculada a um provedor OpenID Connect; `imported` = veio do import-json; `local` = criada aqui. */
+  source: 'imported' | 'local' | 'sso';
   lastSeen: string | null;
   hasAvatar: boolean;
   deskId: string | null;
@@ -59,7 +61,7 @@ export function createAdminRoutes(ctx: RouteContext): RouteHandler {
     roleName: u.role_name,
     isAdmin: u.is_admin,
     status: u.status,
-    source: u.external_id === null ? 'local' : 'imported',
+    source: u.external_id === null ? 'local' : isOidcExternalId(u.external_id) ? 'sso' : 'imported',
     lastSeen: u.last_seen_at ? u.last_seen_at.toISOString() : null,
     hasAvatar: u.appearance !== null,
     deskId: deskByUser.get(u.id) ?? null,

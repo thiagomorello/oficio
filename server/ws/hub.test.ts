@@ -3,7 +3,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { AddressInfo } from 'node:net';
 import { WebSocket } from 'ws';
 import { createApp, type App } from '../app-factory';
-import type { ServerConfig } from '../config';
+import { parseOidcConfig, type ServerConfig } from '../config';
 import { setQuiet } from '../log';
 import { DEFAULT_BRANDING } from '../../shared/branding';
 import { decodeServer, type ServerMsg } from '../../shared/protocol';
@@ -27,6 +27,7 @@ function testConfig(): ServerConfig {
     rootDir: process.cwd(),
     version: 'test',
     warnings: [],
+    oidc: parseOidcConfig({}, []),
   };
 }
 

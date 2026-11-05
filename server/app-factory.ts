@@ -12,6 +12,8 @@ import { localeFromRequest, translatorFor, type ReqTranslator } from './i18n';
 import { createAdminRoutes } from './http/admin-routes';
 import { createMapRoutes } from './http/admin-maps-routes';
 import { createAuthRoutes } from './http/auth-routes';
+import { createOidcRoutes } from './http/oidc-routes';
+import { createOidcService } from './auth/oidc';
 import { createRequestGuard } from './http/guard';
 import { createMeRoutes } from './http/me-routes';
 import { createMetricsRoutes } from './http/metrics-routes';
@@ -173,7 +175,9 @@ export async function createApp({ config, db, repos, mailer, onAppearanceChanged
     onlineUserIds: () => [...office.conns.keys()],
   };
   const ctx: RouteContext = { config, repos, session, mailer: mailer ?? createMailer(config), hooks };
-  const routes: RouteHandler[] = [createAuthRoutes(ctx), createMeRoutes(ctx), createTelemetryRoutes(ctx), createAdminRoutes(ctx)];
+  // OIDC antes das rotas de auth: /api/auth/oidc/* é GET (redirecionamentos), o resto de /api/auth/* é POST.
+  const oidc = createOidcService({ config, repos, secret: secret ?? randomBytes(32).toString('hex') });
+  const routes: RouteHandler[] = [createOidcRoutes(ctx, oidc), createAuthRoutes(ctx), createMeRoutes(ctx), createTelemetryRoutes(ctx), createAdminRoutes(ctx)];
 
   const authed = async (req: http.IncomingMessage, res: http.ServerResponse, tr: ReqTranslator) => {
     const user = await (worldSession ?? session).userFromRequest(req);
