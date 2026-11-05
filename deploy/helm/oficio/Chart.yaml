@@ -2,8 +2,8 @@ apiVersion: v2
 name: oficio
 description: Oficio, a self-hosted virtual office with proximity audio and video. One single-replica app, optional bundled MySQL and LiveKit, Ingress with WebSocket-friendly annotations.
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.1.1
+appVersion: "0.1.1"
 kubeVersion: ">=1.25.0-0"
 home: https://github.com/thiagomorello/oficio
 sources:

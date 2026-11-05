@@ -5,6 +5,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-04
+
 ### Added
 - Helm chart in `deploy/helm/oficio` (#14): single-replica app with `Recreate`, optional bundled MySQL StatefulSet or external database (`MYSQL_SSL`, `MYSQL_SSL_CA`), optional bundled LiveKit (host network or NodePort/LoadBalancer media ports, config in a ConfigMap) or LiveKit Cloud, Ingress presets for ingress-nginx and Traefik, cert-manager annotations, secrets generated and kept across upgrades or `existingSecret`, optional PDB and ServiceMonitor; example values files, a `helm` CI job and a rewritten Kubernetes guide in both languages.
 - `MYSQL_SSL_CA` (or `?sslca=` in `DATABASE_URL`): validate the database certificate against a private or corporate CA bundle instead of using `skip-verify`.

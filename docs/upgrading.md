@@ -8,7 +8,7 @@ Oficio follows [Semantic Versioning](https://semver.org/); every release has not
 
 | Tag | Meaning | Use it for |
 |---|---|---|
-| `0.1.0` | exact release | production: predictable, you choose when to move |
+| `0.1.1` | exact release | production: predictable, you choose when to move |
 | `0.1` | latest patch of a minor | production if you want bug fixes automatically on `pull` |
 | `latest` | latest **release** | the default in `docker-compose.yml`; fine for small teams, but it can jump a minor version on `pull` |
 | `edge` | every push to `main` | testing unreleased changes; never production |
@@ -17,7 +17,7 @@ Oficio follows [Semantic Versioning](https://semver.org/); every release has not
 The compose file reads the tag from `OFICIO_VERSION` in `.env` (`image: ghcr.io/thiagomorello/oficio:${OFICIO_VERSION:-latest}`). Pin it:
 
 ```ini
-OFICIO_VERSION=0.1.0
+OFICIO_VERSION=0.1.1
 ```
 
 The running version is visible in `GET /api/health` (`"version"`), and in the app logs at boot.

@@ -1,6 +1,6 @@
 {
   "name": "oficio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Open source self-hosted virtual office: pixel-art map, proximity audio/video with LiveKit, chat and meeting rooms.",
   "homepage": "https://github.com/thiagomorello/oficio",

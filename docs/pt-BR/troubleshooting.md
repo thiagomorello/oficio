@@ -16,7 +16,7 @@ O app registra avisos de configuração na inicialização (segredos faltando, c
 
 ```sh
 curl -s https://office.example.com/api/health
-# {"ok":true,"db":"ok","version":"0.1.0","uptime":1234,"online":7,"livekit":true}
+# {"ok":true,"db":"ok","version":"0.1.1","uptime":1234,"online":7,"livekit":true}
 ```
 
 | Campo | Significado |

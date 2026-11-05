@@ -103,7 +103,7 @@ Quando qualquer uma de `LIVEKIT_URL`, `LIVEKIT_API_KEY` ou `LIVEKIT_API_SECRET` 
 | `OFFICE_DOMAIN` | nome de host | — | **sim com compose** | O Caddy serve o app em `https://$OFFICE_DOMAIN`. Também o fallback de `OFFICE_PUBLIC_URL` e `OFFICE_ALLOWED_HOSTS`. |
 | `LIVEKIT_DOMAIN` | nome de host | — | **sim com compose** | O Caddy faz proxy de `https://$LIVEKIT_DOMAIN` para `livekit:7880`. Também o fallback de `LIVEKIT_URL`. |
 | `ACME_EMAIL` | e-mail | vazio | recomendada | E-mail de contato que o Caddy informa ao Let's Encrypt (avisos de expiração). |
-| `OFICIO_VERSION` | tag da imagem | `latest` | não | Tag de `ghcr.io/thiagomorello/oficio` a executar. Fixe-a (`0.1.0`) em produção; veja [Atualização](upgrading.md). |
+| `OFICIO_VERSION` | tag da imagem | `latest` | não | Tag de `ghcr.io/thiagomorello/oficio` a executar. Fixe-a (`0.1.1`) em produção; veja [Atualização](upgrading.md). |
 | `TZ` | fuso horário | `UTC` | não | Fuso horário dos containers do app e do MySQL (afeta os timestamps dos logs e o contador de "logins hoje" no painel de administração). |
 
 Estas não são lidas pelo processo Node; existem para o `docker-compose.yml`, o Caddy e as stacks do Portainer.
@@ -214,7 +214,7 @@ LIVEKIT_UDP_PORT=7882
 OFFICE_DOMAIN=office.example.com
 LIVEKIT_DOMAIN=livekit.example.com
 ACME_EMAIL=admin@example.com
-OFICIO_VERSION=0.1.0
+OFICIO_VERSION=0.1.1
 TZ=UTC
 
 SENDGRID_API_KEY=

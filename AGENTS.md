@@ -80,7 +80,7 @@ Run on the server as a user that can use Docker. Stop and report to the human if
 ```sh
 # 1. Code and secrets
 git clone https://github.com/thiagomorello/oficio.git && cd oficio
-git checkout v0.1.0                      # pin a release tag; never deploy an untested main
+git checkout v0.1.1                      # pin a release tag; never deploy an untested main
 cp .env.example .env
 ./scripts/gen-secrets.sh                 # fills OFFICE_JWT_SECRET, MYSQL_*, LIVEKIT_API_KEY/SECRET, METRICS_TOKEN
 
@@ -89,7 +89,7 @@ cp .env.example .env
 #    OFFICE_PUBLIC_URL=https://<OFFICE_DOMAIN>, OFFICE_ALLOWED_HOSTS=<OFFICE_DOMAIN>, LIVEKIT_URL=wss://<LIVEKIT_DOMAIN>
 #    (or delete those three lines so docker-compose.yml derives them from the domains)
 #    OFFICE_APP_NAME, OFFICE_ACCENT_COLOR, OFFICE_DEFAULT_LOCALE, TZ
-#    OFICIO_VERSION=0.1.0  (pins the image tag used by docker-compose.yml)
+#    OFICIO_VERSION=0.1.1  (pins the image tag used by docker-compose.yml)
 grep -E "^(OFFICE_DOMAIN|LIVEKIT_DOMAIN|ACME_EMAIL|LIVEKIT_NODE_IP|OFFICE_JWT_SECRET|LIVEKIT_API_SECRET)=" .env | sed "s/=.*/=<set>/"
 
 # 3. Validate and start

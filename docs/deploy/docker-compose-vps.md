@@ -223,7 +223,7 @@ Press `Ctrl+C` to stop following the logs (the containers keep running). `docker
 curl -s https://office.example.com/api/health
 ```
 
-Expected: `{"ok":true,"db":"ok","version":"0.1.0","uptime":42,"online":0,"livekit":true}` (version and uptime vary). `db` must be `ok` and `livekit` must be `true`.
+Expected: `{"ok":true,"db":"ok","version":"0.1.1","uptime":42,"online":0,"livekit":true}` (version and uptime vary). `db` must be `ok` and `livekit` must be `true`.
 
 ```sh
 curl -s https://livekit.example.com/

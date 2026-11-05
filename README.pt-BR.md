@@ -88,7 +88,7 @@ Faça o deploy do Oficio (https://github.com/thiagomorello/oficio) em produção
 Domínios: office.example.com e livekit.example.com (o DNS já aponta para aqui). E-mail ACME: voce@example.com.
 IP público: rode `curl -4 ifconfig.me`. Nome do app "Acme Office", cor de destaque #ff6600, idioma padrão pt-BR.
 Primeiro admin: voce@example.com, "Seu Nome". Use o LiveKit auto-hospedado do docker-compose.yml.
-Fixe a release v0.1.0. Pare e me pergunte antes de qualquer comando destrutivo e me entregue a senha temporária do admin só uma vez.
+Fixe a release v0.1.1. Pare e me pergunte antes de qualquer comando destrutivo e me entregue a senha temporária do admin só uma vez.
 ```
 
 O mesmo runbook cobre Portainer, Coolify, Dokploy, Railway, Render, Fly.io e Kubernetes apontando o agente para o

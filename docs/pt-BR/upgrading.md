@@ -8,7 +8,7 @@ O Oficio segue o [Versionamento Semântico](https://semver.org/); todo release t
 
 | Tag | Significado | Use para |
 |---|---|---|
-| `0.1.0` | release exato | produção: previsível, você escolhe quando mudar |
+| `0.1.1` | release exato | produção: previsível, você escolhe quando mudar |
 | `0.1` | último patch de uma minor | produção, se você quiser correções de bugs automaticamente no `pull` |
 | `latest` | último **release** | o padrão no `docker-compose.yml`; bom para equipes pequenas, mas pode pular uma versão minor no `pull` |
 | `edge` | todo push na `main` | testar mudanças ainda não lançadas; nunca produção |
@@ -17,7 +17,7 @@ O Oficio segue o [Versionamento Semântico](https://semver.org/); todo release t
 O arquivo compose lê a tag de `OFICIO_VERSION` no `.env` (`image: ghcr.io/thiagomorello/oficio:${OFICIO_VERSION:-latest}`). Fixe-a:
 
 ```ini
-OFICIO_VERSION=0.1.0
+OFICIO_VERSION=0.1.1
 ```
 
 A versão em execução é visível em `GET /api/health` (`"version"`) e nos logs do app na inicialização.

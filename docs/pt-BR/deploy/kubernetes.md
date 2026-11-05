@@ -21,7 +21,7 @@ O Oficio mantém o estado vivo do escritório em memória; dois Pods seriam dois
 O chart vive no repositório, então clone uma tag de release e instale a partir do caminho (a publicação em um repositório de charts está planejada):
 
 ```sh
-git clone --branch v0.1.0 https://github.com/thiagomorello/oficio.git && cd oficio
+git clone --branch v0.1.1 https://github.com/thiagomorello/oficio.git && cd oficio
 ls deploy/helm/oficio/examples/
 ```
 
@@ -200,7 +200,7 @@ spec:
       securityContext: { runAsNonRoot: true, runAsUser: 1000, fsGroup: 1000 }
       containers:
         - name: app
-          image: ghcr.io/thiagomorello/oficio:0.1.0
+          image: ghcr.io/thiagomorello/oficio:0.1.1
           ports: [{ name: http, containerPort: 4747 }]
           envFrom:
             - configMapRef: { name: oficio-config }

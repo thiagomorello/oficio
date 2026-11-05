@@ -223,7 +223,7 @@ Pressione `Ctrl+C` para parar de acompanhar os logs (os containers continuam rod
 curl -s https://office.example.com/api/health
 ```
 
-Esperado: `{"ok":true,"db":"ok","version":"0.1.0","uptime":42,"online":0,"livekit":true}` (versão e uptime variam). `db` precisa ser `ok` e `livekit` precisa ser `true`.
+Esperado: `{"ok":true,"db":"ok","version":"0.1.1","uptime":42,"online":0,"livekit":true}` (versão e uptime variam). `db` precisa ser `ok` e `livekit` precisa ser `true`.
 
 ```sh
 curl -s https://livekit.example.com/

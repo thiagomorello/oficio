@@ -14,7 +14,7 @@ Full guide: [docs/deploy/kubernetes.md](../../../docs/deploy/kubernetes.md) (Eng
 The chart is distributed in the repository (`deploy/helm/oficio`). Clone a release tag and install from the path:
 
 ```sh
-git clone --branch v0.1.0 https://github.com/thiagomorello/oficio.git && cd oficio
+git clone --branch v0.1.1 https://github.com/thiagomorello/oficio.git && cd oficio
 cp deploy/helm/oficio/examples/values-minimal.yaml my-values.yaml   # edit: host, LiveKit Cloud URL/key/secret
 helm install oficio deploy/helm/oficio -n oficio --create-namespace -f my-values.yaml
 kubectl -n oficio rollout status deployment/oficio

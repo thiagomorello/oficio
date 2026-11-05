@@ -88,7 +88,7 @@ Deploy Oficio (https://github.com/thiagomorello/oficio) to production on this se
 Domains: office.example.com and livekit.example.com (DNS already points here). ACME e-mail: you@example.com.
 Public IP: run `curl -4 ifconfig.me`. App name "Acme Office", accent color #ff6600, default language en.
 First admin: you@example.com, "Your Name". Use the self-hosted LiveKit from docker-compose.yml.
-Pin release v0.1.0. Stop and ask me before any destructive command, and give me the temporary admin password only once.
+Pin release v0.1.1. Stop and ask me before any destructive command, and give me the temporary admin password only once.
 ```
 
 The same runbook covers Portainer, Coolify, Dokploy, Railway, Render, Fly.io and Kubernetes by pointing the agent

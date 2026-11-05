@@ -105,7 +105,7 @@ Acompanhe a emissão dos certificados e a inicialização do app:
 docker compose logs -f caddy app
 ```
 
-O Caddy registra `certificate obtained successfully` para cada domínio. O app registra seus avisos (não deve haver nenhum sobre segredos faltando), as migrations que aplicou (`migration 001_init...` … `005_telemetry`), `First boot: default map stored as published version #1` e, por fim, `Oficio 0.1.0 (docker) listening on http://0.0.0.0:4747`. Pressione `Ctrl+C` para parar de acompanhar.
+O Caddy registra `certificate obtained successfully` para cada domínio. O app registra seus avisos (não deve haver nenhum sobre segredos faltando), as migrations que aplicou (`migration 001_init...` … `005_telemetry`), `First boot: default map stored as published version #1` e, por fim, `Oficio 0.1.1 (docker) listening on http://0.0.0.0:4747`. Pressione `Ctrl+C` para parar de acompanhar.
 
 Agora confira de fora:
 
@@ -117,7 +117,7 @@ curl -s https://livekit.example.com/
 Esperado:
 
 ```json
-{"ok":true,"db":"ok","version":"0.1.0","uptime":42,"online":0,"livekit":true}
+{"ok":true,"db":"ok","version":"0.1.1","uptime":42,"online":0,"livekit":true}
 ```
 
 e um simples `OK` do LiveKit. Se o `curl` reclamar do certificado, o Caddy ainda não terminou a troca ACME; espere um minuto e tente de novo. Se continuar falhando, veja [Solução de problemas](troubleshooting.md#o-caddy-não-consegue-obter-um-certificado).
@@ -175,7 +175,7 @@ Peça que a pessoa abra o escritório em outro navegador enquanto você está ne
 ## 10. Antes que você esqueça
 
 - **Backups:** `./scripts/backup.sh` faz o dump do MySQL em `./backups/`. Coloque no cron; veja [Backup e restauração](backup-restore.md).
-- **Atualizações:** fixe `OFICIO_VERSION=0.1.0` no `.env` quando estiver satisfeito, e leia [Atualização](upgrading.md) antes de mudar.
+- **Atualizações:** fixe `OFICIO_VERSION=0.1.1` no `.env` quando estiver satisfeito, e leia [Atualização](upgrading.md) antes de mudar.
 - **Monitoramento:** `GET /api/health` para checagens de disponibilidade; `GET /metrics` com `Authorization: Bearer $METRICS_TOKEN` para o Prometheus.
 - **Hardening:** passe os olhos no checklist em [SECURITY.md](../../SECURITY.md).
 

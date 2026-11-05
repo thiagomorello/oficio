@@ -105,7 +105,7 @@ Watch the certificates being issued and the app booting:
 docker compose logs -f caddy app
 ```
 
-Caddy logs `certificate obtained successfully` for each domain. The app logs its warnings (there should be none about missing secrets), the migrations it applied (`migration 001_init...` … `005_telemetry`), `First boot: default map stored as published version #1` and finally `Oficio 0.1.0 (docker) listening on http://0.0.0.0:4747`. Press `Ctrl+C` to stop following.
+Caddy logs `certificate obtained successfully` for each domain. The app logs its warnings (there should be none about missing secrets), the migrations it applied (`migration 001_init...` … `005_telemetry`), `First boot: default map stored as published version #1` and finally `Oficio 0.1.1 (docker) listening on http://0.0.0.0:4747`. Press `Ctrl+C` to stop following.
 
 Now check from outside:
 
@@ -117,7 +117,7 @@ curl -s https://livekit.example.com/
 Expected:
 
 ```json
-{"ok":true,"db":"ok","version":"0.1.0","uptime":42,"online":0,"livekit":true}
+{"ok":true,"db":"ok","version":"0.1.1","uptime":42,"online":0,"livekit":true}
 ```
 
 and a bare `OK` from LiveKit. If `curl` complains about the certificate, Caddy has not finished the ACME exchange yet; wait a minute and retry. If it keeps failing, see [Troubleshooting](troubleshooting.md#caddy-cannot-get-a-certificate).
@@ -175,7 +175,7 @@ Ask them to open the office in another browser while you are in it. Walk up to e
 ## 10. Before you forget
 
 - **Backups:** `./scripts/backup.sh` dumps MySQL to `./backups/`. Put it in cron; see [Backup and restore](backup-restore.md).
-- **Upgrades:** pin `OFICIO_VERSION=0.1.0` in `.env` once you are happy, and read [Upgrading](upgrading.md) before changing it.
+- **Upgrades:** pin `OFICIO_VERSION=0.1.1` in `.env` once you are happy, and read [Upgrading](upgrading.md) before changing it.
 - **Monitoring:** `GET /api/health` for uptime checks; `GET /metrics` with `Authorization: Bearer $METRICS_TOKEN` for Prometheus.
 - **Hardening:** skim the checklist in [SECURITY.md](../SECURITY.md).
 

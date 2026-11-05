@@ -14,7 +14,7 @@ body:
     attributes:
       label: Oficio version
       description: Shown in GET /api/health (`version`) or the image tag.
-      placeholder: 0.1.0
+      placeholder: 0.1.1
     validations:
       required: true
   - type: dropdown
