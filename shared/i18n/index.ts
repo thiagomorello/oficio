@@ -1,10 +1,10 @@
 // Ponto de entrada do i18n. Cliente: `t(key)` usa o idioma atual (setLocale). Servidor: `tFor(locale, key)`
 // com o idioma de cada requisição (server/i18n.ts), porque o processo atende várias pessoas ao mesmo tempo.
 //
-// Adicionar uma mensagem: escolha a área em shared/i18n/messages/, acrescente a chave em `en` e em `pt-BR`
-// (o tipo obriga as duas) e use `t('area.chave')`. Parâmetros: `t('x.y', { name })` com `{name}` no texto.
+// Adicionar uma mensagem: escolha a área em shared/i18n/messages/, acrescente a chave em `en` e em cada outro
+// idioma do mapa (`pt-BR`, `es`; o tipo obriga todos) e use `t('area.chave')`. Parâmetros: `t('x.y', { name })` com `{name}` no texto.
 // Plural: chaves `x.y.one` e `x.y.other` com `tn('x.y', n)`.
-import { createTranslator, DEFAULT_LOCALE, interpolate, resolveLocale, type Locale, type Params } from './core';
+import { createTranslator, DEFAULT_LOCALE, interpolate, resolveLocale, SUPPORTED_LOCALES, type Locale, type Params } from './core';
 import { admin } from './messages/admin';
 import { av } from './messages/av';
 import { avatar } from './messages/avatar';
@@ -33,7 +33,9 @@ function merge(locale: Locale): Record<string, string> {
   return out;
 }
 
-export const MESSAGES: { readonly [L in Locale]: Readonly<Record<string, string>> } = { en: merge('en'), 'pt-BR': merge('pt-BR') };
+export const MESSAGES: { readonly [L in Locale]: Readonly<Record<string, string>> } = Object.fromEntries(
+  SUPPORTED_LOCALES.map((l) => [l, merge(l)]),
+) as Record<Locale, Readonly<Record<string, string>>>;
 
 const translator = createTranslator<MessageKey>(MESSAGES);
 
@@ -76,7 +78,7 @@ export function tn(key: PluralKey, n: number, params?: Params): string {
 }
 
 /** Nome do idioma para seletores, no próprio idioma. */
-export const LOCALE_NAMES: Readonly<Record<Locale, string>> = { en: 'English', 'pt-BR': 'Português (Brasil)' };
+export const LOCALE_NAMES: Readonly<Record<Locale, string>> = { en: 'English', 'pt-BR': 'Português (Brasil)', es: 'Español' };
 
 /** Só para testes: volta ao padrão sem avisar ouvintes. */
 export function resetLocaleForTests(locale: Locale = DEFAULT_LOCALE): void {
