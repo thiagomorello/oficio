@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- Helm chart in `deploy/helm/oficio` (#14): single-replica app with `Recreate`, optional bundled MySQL StatefulSet or external database (`MYSQL_SSL`, `MYSQL_SSL_CA`), optional bundled LiveKit (host network or NodePort/LoadBalancer media ports, config in a ConfigMap) or LiveKit Cloud, Ingress presets for ingress-nginx and Traefik, cert-manager annotations, secrets generated and kept across upgrades or `existingSecret`, optional PDB and ServiceMonitor; example values files, a `helm` CI job and a rewritten Kubernetes guide in both languages.
 - `MYSQL_SSL_CA` (or `?sslca=` in `DATABASE_URL`): validate the database certificate against a private or corporate CA bundle instead of using `skip-verify`.
 - Spanish (`es`) interface language: every message of every area translated, selectable on the login page and in settings, honoured by `Accept-Language` (`es-*`), e-mails and the default map; `OFFICE_DEFAULT_LOCALE=es` accepted. `defineMessages` now takes a map of locales so adding a language is one more entry per file. ([#15](https://github.com/thiagomorello/oficio/issues/15))
 - Single sign-on with OpenID Connect (`OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_SCOPES`, `OIDC_BUTTON_LABEL`,

@@ -1,0 +1,19 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "oficio.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- else }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "app") | nindent 6 }}
+{{- end }}

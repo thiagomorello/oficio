@@ -1,0 +1,14 @@
+{{- if and (not .Values.mysql.enabled) .Values.mysql.external.sslCa (not .Values.mysql.external.sslCaConfigMap) }}
+# CA bundle for the external MySQL (MYSQL_SSL_CA). A CA certificate is public, so a ConfigMap is the right place.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "oficio.mysql.caConfigMap" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+data:
+  ca.crt: |
+    {{- .Values.mysql.external.sslCa | nindent 4 }}
+{{- end }}

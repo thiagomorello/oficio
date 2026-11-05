@@ -1,0 +1,20 @@
+apiVersion: v2
+name: oficio
+description: Oficio, a self-hosted virtual office with proximity audio and video. One single-replica app, optional bundled MySQL and LiveKit, Ingress with WebSocket-friendly annotations.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.25.0-0"
+home: https://github.com/thiagomorello/oficio
+sources:
+  - https://github.com/thiagomorello/oficio
+keywords:
+  - virtual-office
+  - livekit
+  - websocket
+  - mysql
+maintainers:
+  - name: Thiago Morello
+    url: https://github.com/thiagomorello
+annotations:
+  artifacthub.io/license: MIT

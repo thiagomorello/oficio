@@ -1,0 +1,22 @@
+{{- if .Values.mysql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oficio.mysql.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mysql
+spec:
+  # Headless: the app resolves the Pod directly; the StatefulSet uses it as serviceName.
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: false
+  selector:
+    {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "mysql") | nindent 4 }}
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+      protocol: TCP
+{{- end }}

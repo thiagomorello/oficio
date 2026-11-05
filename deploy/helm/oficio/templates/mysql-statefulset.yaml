@@ -1,0 +1,143 @@
+{{- if .Values.mysql.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "oficio.mysql.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mysql
+spec:
+  replicas: 1
+  serviceName: {{ include "oficio.mysql.fullname" . }}
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "mysql") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "oficio.selectorLabels" (dict "ctx" $ "component" "mysql") | nindent 8 }}
+      {{- with .Values.mysql.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        # The official image runs mysqld as uid/gid 999 ("mysql").
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mysql
+          image: {{ printf "%s:%s" .Values.mysql.image.repository .Values.mysql.image.tag }}
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          args:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+            - --innodb-buffer-pool-size={{ .Values.mysql.bufferPoolSize }}
+            - --max-connections={{ .Values.mysql.maxConnections }}
+          env:
+            - name: TZ
+              value: {{ .Values.office.timezone | quote }}
+            - name: MYSQL_DATABASE
+              value: {{ .Values.mysql.auth.database | quote }}
+            - name: MYSQL_USER
+              value: {{ .Values.mysql.auth.username | quote }}
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oficio.mysql.secretName" . }}
+                  key: mysql-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oficio.mysql.secretName" . }}
+                  key: mysql-root-password
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          startupProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -u root -p\"$MYSQL_ROOT_PASSWORD\" --silent"]
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -u root -p\"$MYSQL_ROOT_PASSWORD\" --silent"]
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "mysqladmin ping -h 127.0.0.1 -u root -p\"$MYSQL_ROOT_PASSWORD\" --silent"]
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.mysql.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+            - name: run
+              mountPath: /var/run/mysqld
+      volumes:
+        - name: run
+          emptyDir: {}
+        {{- if not .Values.mysql.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- else if .Values.mysql.persistence.existingClaim }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.mysql.persistence.existingClaim }}
+        {{- end }}
+      {{- with .Values.mysql.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.mysql.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.mysql.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if and .Values.mysql.persistence.enabled (not .Values.mysql.persistence.existingClaim) }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        {{- with .Values.mysql.persistence.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- toYaml .Values.mysql.persistence.accessModes | nindent 10 }}
+        {{- if .Values.mysql.persistence.storageClass }}
+        {{- if eq .Values.mysql.persistence.storageClass "-" }}
+        storageClassName: ""
+        {{- else }}
+        storageClassName: {{ .Values.mysql.persistence.storageClass }}
+        {{- end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.mysql.persistence.size }}
+  {{- end }}
+{{- end }}

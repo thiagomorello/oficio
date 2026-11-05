@@ -1,0 +1,335 @@
+# Default values for the Oficio chart.
+#
+# Oficio is one Node process (HTTP + WebSocket), a MySQL 8 database and a LiveKit server for audio/video.
+# This chart deploys the app as a single-replica Deployment and, optionally, a MySQL StatefulSet and a LiveKit
+# Deployment next to it. Read the comments before enabling anything; every environment variable the app reads is
+# documented in docs/configuration.md of the repository.
+#
+# Quick start (in-cluster MySQL + LiveKit Cloud):       see examples/values-minimal.yaml
+# Fully self-hosted (MySQL + LiveKit in the cluster):   see examples/values-self-hosted.yaml
+# Production with managed MySQL and your own Secret:    see examples/values-external.yaml
+
+# ------------------------------------------------------------------------------------------------------------ image
+
+image:
+  repository: ghcr.io/thiagomorello/oficio
+  # Image tag. Empty = the chart's appVersion. Pin a release (never "latest") in anything you keep running.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Pull secrets for private registries (the official image on GHCR is public).
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+# ------------------------------------------------------------------------------------------------------------ app
+
+# The office state lives in the memory of ONE process (docs/architecture.md, "Why exactly one replica"). The chart
+# therefore always renders `replicas: 1` with `strategy: Recreate`: an upgrade stops the old Pod before starting
+# the new one, users see a few seconds of reconnect, nobody has to log in again. There is no value to scale out.
+
+office:
+  # Public base URL used in e-mail links (password reset, invites), e.g. https://office.example.com.
+  # Empty = https://<ingress.host> when the Ingress is enabled.
+  publicUrl: ""
+  # Host names accepted in the Host/Origin headers, comma-separated (DNS-rebinding/CSRF guard; localhost and IPs
+  # are always accepted). Empty = ingress.host. The chart refuses to render when it ends up empty.
+  allowedHosts: ""
+  # Branding (whitelabel). Everything about the look of the instance comes from these five values.
+  appName: Oficio
+  # Absolute URL or a path served by the app. Empty = the bundled /assets/brand/logo.svg.
+  logoUrl: ""
+  # Accent colour as #rrggbb. Empty = the default #7c9cff.
+  accentColor: ""
+  # Text on the reception sign in the map (max 14 ASCII chars). Empty = appName.
+  signText: ""
+  # Default UI language for new visitors, server messages and e-mails: en | pt-BR | es.
+  defaultLocale: en
+  # Name of the single LiveKit room the office uses. Change only if several instances share one LiveKit server.
+  livekitRoom: oficio
+  # Time zone of the app (log timestamps, "logins today" counter). Also applied to the bundled MySQL.
+  timezone: UTC
+  # Session cookie only over HTTPS. Keep true: browsers refuse camera/microphone over plain HTTP anyway.
+  cookieSecure: true
+  # Trust X-Forwarded-For from the Ingress controller for rate limiting. Keep true behind an Ingress.
+  trustProxy: true
+  # Sender address for invite / password-reset e-mails (required when secrets.sendgridApiKey is set).
+  mailFrom: ""
+  # Extra environment variables for the app container (list of EnvVar, e.g. {name: FOO, value: bar} or valueFrom).
+  extraEnv: []
+  # Extra envFrom sources (configMapRef / secretRef) for the app container.
+  extraEnvFrom: []
+
+# ------------------------------------------------------------------------------------------------------------ secrets
+
+# The app reads its secrets from ONE Kubernetes Secret, mounted with envFrom. Either let the chart manage it or
+# bring your own.
+secrets:
+  # Name of an existing Secret you manage (e.g. with External Secrets, Sealed Secrets or kubectl). When set, the
+  # chart creates no app Secret and ignores the values below. Expected keys (all optional unless noted):
+  #   OFFICE_JWT_SECRET     (required) session signing key, `openssl rand -hex 32`
+  #   LIVEKIT_API_KEY       (required for A/V) same pair as configured in the LiveKit server
+  #   LIVEKIT_API_SECRET    (required for A/V)
+  #   DATABASE_URL          only for an external MySQL given as a URL (mysql://user:pass@host:3306/db);
+  #                         with the bundled MySQL the password comes from the MySQL Secret instead
+  #   MYSQL_PASSWORD        alternative to DATABASE_URL for an external MySQL given as parts (mysql.external.*)
+  #   METRICS_TOKEN         protects GET /metrics
+  #   SENDGRID_API_KEY      enables e-mails (also set office.mailFrom)
+  existingSecret: ""
+  # Values for the chart-managed Secret. Empty strings are GENERATED on first install with random values and
+  # KEPT on upgrades (the chart looks the live Secret up and reuses it). `helm template` cannot look anything up,
+  # so its output shows fresh values every time; that is expected.
+  # Session signing key. Changing it signs everyone out.
+  jwtSecret: ""
+  # LiveKit API key/secret. With the bundled LiveKit the server is configured with the same pair automatically.
+  # With LiveKit Cloud paste the project's key and secret here (or use existingSecret).
+  livekitApiKey: ""
+  livekitApiSecret: ""
+  # Bearer token for GET /metrics (Prometheus). Empty = generated. Set metrics.protect=false to leave /metrics open.
+  metricsToken: ""
+  # SendGrid API key for invitation and password-reset e-mails. Empty = no e-mails; temporary passwords are shown
+  # to the admin on screen instead.
+  sendgridApiKey: ""
+
+metrics:
+  # When true, GET /metrics requires `Authorization: Bearer <METRICS_TOKEN>`. When false no token is set and the
+  # endpoint is public (aggregate counters only, no personal data).
+  protect: true
+  # Optional ServiceMonitor for the Prometheus Operator (requires its CRDs in the cluster). It reads the bearer
+  # token from the app Secret, so it also works with secrets.existingSecret.
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    labels: {}
+
+# ------------------------------------------------------------------------------------------------------------ mysql
+
+mysql:
+  # Run a MySQL 8 StatefulSet in the cluster. Good for a quick start and small teams. For production prefer a
+  # managed database or an operator you already run and set enabled=false + mysql.external.*: backups, upgrades
+  # and failover are then the database side's job.
+  enabled: true
+  image:
+    repository: mysql
+    tag: "8.0"
+    pullPolicy: IfNotPresent
+  auth:
+    database: oficio
+    username: oficio
+    # Empty = generated on first install and kept on upgrades (same rule as secrets.*). Keep it URL-safe.
+    password: ""
+    rootPassword: ""
+    # Existing Secret with keys `mysql-password` and `mysql-root-password` instead of the chart-managed one.
+    existingSecret: ""
+  persistence:
+    enabled: true
+    # Empty = the cluster's default StorageClass. "-" disables dynamic provisioning.
+    storageClass: ""
+    accessModes: [ReadWriteOnce]
+    size: 10Gi
+    # Use a PersistentVolumeClaim you created instead of the StatefulSet's volumeClaimTemplate.
+    existingClaim: ""
+    annotations: {}
+  # innodb-buffer-pool-size; raise to 512M-1G when the node has memory to spare.
+  bufferPoolSize: 256M
+  maxConnections: 100
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  # Connection to a MySQL outside the chart, used only when mysql.enabled=false.
+  external:
+    # Either a full URL (special characters in the password URL-encoded; `?ssl=true` for TLS)...
+    databaseUrl: ""
+    # ...or the parts. The app assembles the URL and URL-encodes user and password for you.
+    host: ""
+    port: 3306
+    database: oficio
+    username: oficio
+    password: ""
+    # Existing Secret holding the password (key configurable), so the password never lands in values files.
+    existingSecret: ""
+    existingSecretKey: mysql-password
+    # TLS to the database: "" (plain), "required" (validates the server certificate, what managed databases need)
+    # or "skip-verify" (encrypts without validation; acceptable only as a documented temporary measure).
+    # Applies to both forms (URL and parts).
+    ssl: ""
+    # CA bundle (PEM) that signed the database certificate, for private or corporate CAs (MYSQL_SSL_CA; implies TLS
+    # with validation). Either paste the PEM here (stored in a ConfigMap and mounted read-only) or name an existing
+    # ConfigMap that holds it under the key ca.crt. Leave both empty for public CAs.
+    sslCa: ""
+    sslCaConfigMap: ""
+
+# ------------------------------------------------------------------------------------------------------------ livekit
+
+livekit:
+  # Run a LiveKit server in the cluster. WebRTC media needs UDP (and a TCP fallback) to reach the Pod from the
+  # internet on the ports LiveKit announces, which does not fit the usual Ingress model. Two ways to expose them:
+  #   hostNetwork=true  (default, LiveKit's documented Kubernetes model): the Pod binds 7880/7881/7882 directly on
+  #                      the node; open 7881/tcp and 7882/udp on the node's firewall/security group; at most one
+  #                      LiveKit Pod per node; does not work on private clusters or serverless node pools.
+  #   hostNetwork=false: a second Service (NodePort or LoadBalancer) forwards the media ports 1:1 to the Pod. With
+  #                      NodePort the node port MUST equal the port LiveKit announces, so set rtc.tcpPort/udpPort
+  #                      inside the cluster's node-port range (default 30000-32767). With LoadBalancer pin
+  #                      rtc.nodeIp to the load balancer's IP (STUN discovery would find the node, not the LB).
+  # Set enabled=false and fill livekit.external.* for LiveKit Cloud or a LiveKit you run elsewhere.
+  enabled: true
+  image:
+    repository: livekit/livekit-server
+    tag: v1.13.11
+    pullPolicy: IfNotPresent
+  # Public signaling URL browsers connect to, e.g. wss://livekit.example.com. Empty = wss://<livekit.ingress.host>
+  # when the LiveKit Ingress is enabled. The chart refuses to render when it ends up empty: the browser needs TLS.
+  publicUrl: ""
+  hostNetwork: true
+  rtc:
+    # ICE over TCP (fallback when UDP is blocked) and the single UDP port for all media.
+    tcpPort: 7881
+    udpPort: 7882
+    # Discover the public IP through STUN (works behind the node's NAT). Set nodeIp to pin it instead.
+    useExternalIp: true
+    nodeIp: ""
+  # Only in hostNetwork=false mode: the Service that exposes the media ports.
+  service:
+    # NodePort | LoadBalancer
+    type: NodePort
+    annotations: {}
+    # Keep Local so LiveKit sees the real client address and the traffic is not re-routed between nodes.
+    externalTrafficPolicy: Local
+    loadBalancerIP: ""
+  room:
+    autoCreate: true
+    emptyTimeout: 300
+    departureTimeout: 20
+  logging:
+    level: info
+    pionLevel: error
+  # Merged on top of the generated livekit.yaml (deep merge, your keys win). Example, TURN over TLS 443:
+  #   extraConfig:
+  #     turn: { enabled: true, domain: turn.example.com, tls_port: 5349, external_tls: true }
+  extraConfig: {}
+  # Ingress for the signaling endpoint (wss://). Same WebSocket annotations as the app Ingress.
+  ingress:
+    enabled: false
+    className: ""
+    host: ""
+    annotations: {}
+    tls:
+      enabled: true
+      secretName: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      memory: 2Gi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  # Used when enabled=false.
+  external:
+    # LiveKit Cloud: wss://<project>.livekit.cloud. Your own LiveKit: its public wss:// URL.
+    url: ""
+    # URL the app uses for the LiveKit API from inside the cluster. Empty = same as url (right for LiveKit Cloud).
+    internalUrl: ""
+
+# ------------------------------------------------------------------------------------------------------------ ingress
+
+ingress:
+  enabled: false
+  # IngressClass name: nginx, traefik, ... (empty = the cluster default).
+  className: nginx
+  # Host name of the office, e.g. office.example.com. Also the default for office.publicUrl / office.allowedHosts.
+  host: ""
+  path: /
+  pathType: Prefix
+  # Free-form annotations merged last (they win over the presets below).
+  annotations: {}
+  # ingress-nginx preset: raise the proxy timeouts so idle WebSockets are not cut after 60 s, allow 2 MB bodies.
+  nginx:
+    enabled: true
+    proxyReadTimeout: "3600"
+    proxySendTimeout: "3600"
+    proxyBodySize: "2m"
+  # Traefik preset: route through the TLS entrypoint. Traefik proxies WebSockets without extra configuration;
+  # idle timeouts are set on the entrypoint (respondingTimeouts), not per Ingress.
+  traefik:
+    enabled: false
+    entrypoints: websecure
+  tls:
+    enabled: true
+    # Empty = <release>-oficio-tls. cert-manager fills it when certManager.* is set; otherwise create it yourself.
+    secretName: ""
+  # Adds the cert-manager.io/cluster-issuer (or issuer) annotation to BOTH Ingresses (app and LiveKit).
+  certManager:
+    clusterIssuer: ""
+    issuer: ""
+
+# ------------------------------------------------------------------------------------------------------------ k8s
+
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# Default from the reference manifests: about 0.25 vCPU and 256 MB for a small team, 1 GB ceiling.
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+# /api/health answers {ok, db, livekit, online, ...}; 503 when the database is unreachable.
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Off by default: with one replica a PDB with minAvailable=1 blocks node drains, and maxUnavailable=1 is a no-op.
+# Enable it consciously if your cluster policy requires one on every Deployment.
+podDisruptionBudget:
+  enabled: false
+  minAvailable: ""
+  maxUnavailable: 1
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+priorityClassName: ""
+terminationGracePeriodSeconds: 30
+
+# The image runs as the "node" user (uid 1000) and writes nothing outside /tmp.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]

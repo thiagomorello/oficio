@@ -1,0 +1,34 @@
+{{- if .Values.livekit.enabled }}
+{{- /* Same shape as deploy/livekit/livekit.yaml and the inline config in docker-compose.yml. Keys come from the
+       LIVEKIT_KEYS environment variable (built from the app Secret) so the ConfigMap holds no secret. */}}
+{{- $rtc := dict
+      "tcp_port" (int .Values.livekit.rtc.tcpPort)
+      "udp_port" (int .Values.livekit.rtc.udpPort)
+      "use_external_ip" .Values.livekit.rtc.useExternalIp }}
+{{- if .Values.livekit.rtc.nodeIp }}
+{{- $_ := set $rtc "node_ip" .Values.livekit.rtc.nodeIp }}
+{{- end }}
+{{- $cfg := dict
+      "port" 7880
+      "rtc" $rtc
+      "turn" (dict "enabled" false)
+      "room" (dict
+        "auto_create" .Values.livekit.room.autoCreate
+        "empty_timeout" (int .Values.livekit.room.emptyTimeout)
+        "departure_timeout" (int .Values.livekit.room.departureTimeout))
+      "logging" (dict
+        "level" .Values.livekit.logging.level
+        "pion_level" .Values.livekit.logging.pionLevel) }}
+{{- $cfg = mustMergeOverwrite $cfg (deepCopy (default dict .Values.livekit.extraConfig)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "oficio.livekit.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: livekit
+data:
+  livekit.yaml: |
+    {{- toYaml $cfg | nindent 4 }}
+{{- end }}

@@ -5,7 +5,7 @@ Where Oficio is likely to go after 0.1. This is a list of directions the maintai
 ## Scaling and operations
 
 - **Horizontal scaling.** Today the office state lives in the memory of one process ([why](architecture.md#why-exactly-one-replica)). Moving presence, zone membership and rate limiters to a shared store (Redis pub/sub for the tick fan-out, Redis or MySQL for state) would allow several app replicas, zero-downtime deploys and larger offices. This is the biggest architectural item on the list.
-- **Helm chart.** A chart for Kubernetes with the one-replica app, optional bundled MySQL/LiveKit, Ingress with WebSocket annotations and the LiveKit `hostNetwork`/NodePort media ports, replacing the hand-written manifests in the Kubernetes guide.
+- **Publishing the Helm chart.** The chart exists ([shipped](#shipped-from-this-list)); what remains is publishing it to a chart repository or OCI registry on every release, a `NetworkPolicy` option and feedback from real clusters.
 - **More metrics and structured logs.** Per-zone occupancy, A/V subscription counts and JSON log output for log shippers.
 
 ## Identity and access
@@ -26,6 +26,7 @@ Where Oficio is likely to go after 0.1. This is a list of directions the maintai
 
 ## Shipped from this list
 
+- **Helm chart** (unreleased, on `main`, `deploy/helm/oficio`): one-replica app with `Recreate`, optional bundled MySQL and LiveKit, Ingress presets with WebSocket annotations for ingress-nginx and Traefik, LiveKit media ports via `hostNetwork` or NodePort/LoadBalancer, LiveKit Cloud as the alternative, secrets kept across upgrades ([guide](deploy/kubernetes.md)).
 - **TURN automation** (unreleased, on `main`): the `docker-compose.turn.yml` overlay enables LiveKit's embedded TURN over TLS with the certificate Caddy issues for the LiveKit domain, with a cert-wait wrapper for the first boot and two renewal options ([how to use it](livekit.md#turn-when-and-how)). TURN/TLS listens on 5349 because Caddy owns 443; 443 itself still needs a second IP or a separate host.
 
 ## Not planned

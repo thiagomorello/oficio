@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "oficio.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oficio.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+data:
+  NODE_ENV: "production"
+  TZ: {{ .Values.office.timezone | quote }}
+  OFFICE_IN_DOCKER: "1"
+  OFFICE_HOST: "0.0.0.0"
+  OFFICE_PORT: "4747"
+  {{- with (include "oficio.publicUrl" .) }}
+  OFFICE_PUBLIC_URL: {{ . | quote }}
+  {{- end }}
+  OFFICE_ALLOWED_HOSTS: {{ include "oficio.allowedHosts" . | quote }}
+  OFFICE_COOKIE_SECURE: {{ ternary "1" "0" .Values.office.cookieSecure | quote }}
+  TRUST_PROXY: {{ ternary "1" "0" .Values.office.trustProxy | quote }}
+  OFFICE_APP_NAME: {{ .Values.office.appName | quote }}
+  {{- with .Values.office.logoUrl }}
+  OFFICE_LOGO_URL: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.office.accentColor }}
+  OFFICE_ACCENT_COLOR: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.office.signText }}
+  OFFICE_SIGN_TEXT: {{ . | quote }}
+  {{- end }}
+  OFFICE_DEFAULT_LOCALE: {{ .Values.office.defaultLocale | quote }}
+  {{- with (include "oficio.livekit.publicUrl" .) }}
+  LIVEKIT_URL: {{ . | quote }}
+  {{- end }}
+  {{- with (include "oficio.livekit.internalUrl" .) }}
+  LIVEKIT_INTERNAL_URL: {{ . | quote }}
+  {{- end }}
+  LIVEKIT_ROOM: {{ .Values.office.livekitRoom | quote }}
+  {{- with .Values.office.mailFrom }}
+  MAIL_FROM: {{ . | quote }}
+  {{- end }}
+  {{- /* Database as parts (bundled MySQL, or external MySQL without a URL). The password comes from a Secret. */}}
+  {{- if .Values.mysql.enabled }}
+  MYSQL_HOST: {{ include "oficio.mysql.fullname" . | quote }}
+  MYSQL_PORT: "3306"
+  MYSQL_USER: {{ .Values.mysql.auth.username | quote }}
+  MYSQL_DATABASE: {{ .Values.mysql.auth.database | quote }}
+  {{- else }}
+  {{- if not (include "oficio.mysql.externalUrlMode" .) }}
+  MYSQL_HOST: {{ required "Set mysql.external.host (or mysql.external.databaseUrl) when mysql.enabled=false." .Values.mysql.external.host | quote }}
+  MYSQL_PORT: {{ .Values.mysql.external.port | toString | quote }}
+  MYSQL_USER: {{ .Values.mysql.external.username | quote }}
+  MYSQL_DATABASE: {{ .Values.mysql.external.database | quote }}
+  {{- end }}
+  {{- /* TLS settings apply to both forms (URL and parts). */}}
+  {{- with .Values.mysql.external.ssl }}
+  MYSQL_SSL: {{ . | quote }}
+  {{- end }}
+  {{- if include "oficio.mysql.caConfigMap" . }}
+  MYSQL_SSL_CA: "/etc/oficio/mysql-ca/ca.crt"
+  {{- end }}
+  {{- end }}

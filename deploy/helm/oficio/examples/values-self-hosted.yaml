@@ -1,0 +1,46 @@
+# Fully self-hosted: MySQL and LiveKit inside the cluster, two Ingresses with TLS from cert-manager.
+#
+#   helm install oficio deploy/helm/oficio -n oficio --create-namespace -f deploy/helm/oficio/examples/values-self-hosted.yaml
+#
+# Requirements beyond the minimal example:
+#   - a node whose public IP is reachable on 7881/tcp and 7882/udp (LiveKit runs with hostNetwork=true and
+#     announces that IP to browsers); open those ports in the firewall / security group;
+#   - DNS: office.example.com -> Ingress controller, livekit.example.com -> Ingress controller, both plain A records
+#     (no CDN proxy in front of the LiveKit host);
+#   - pin the LiveKit Pod to that node with livekit.nodeSelector if the cluster has several nodes.
+# All secrets (JWT, LiveKit key/secret, MySQL passwords, metrics token) are generated on first install and kept.
+
+ingress:
+  enabled: true
+  className: nginx
+  host: office.example.com
+  certManager:
+    clusterIssuer: letsencrypt
+
+office:
+  appName: Oficio
+  accentColor: "#7c9cff"
+  defaultLocale: en
+  timezone: UTC
+
+mysql:
+  enabled: true
+  persistence:
+    size: 20Gi
+  bufferPoolSize: 512M
+
+livekit:
+  enabled: true
+  hostNetwork: true
+  ingress:
+    enabled: true
+    host: livekit.example.com
+  rtc:
+    tcpPort: 7881
+    udpPort: 7882
+    useExternalIp: true
+    # Pin the public IP when STUN discovery is unreliable (overlay networks, several NAT layers):
+    # nodeIp: 203.0.113.10
+  # Keep LiveKit on the node whose IP and firewall you prepared:
+  # nodeSelector:
+  #   kubernetes.io/hostname: worker-1

@@ -17,7 +17,7 @@ issue about the disagreement.
 | `client/` | Browser app: Vite multi-page build, plain DOM + canvas, no UI framework |
 | `shared/` | Code used by both sides: map model, validation (zod), i18n messages, branding |
 | `docker-compose.yml` | Production stack for a VPS: `app` + `mysql` + `livekit` + `caddy` (automatic HTTPS). Reads `.env` |
-| `deploy/` | Portainer stacks, Caddy/nginx/Traefik configs, LiveKit template, Kubernetes manifests |
+| `deploy/` | Portainer stacks, Caddy/nginx/Traefik configs, LiveKit template, Helm chart for Kubernetes (`deploy/helm/oficio`) |
 | `scripts/` | `gen-secrets.sh`/`.ps1`, `first-admin.sh`, `backup.sh`, `restore.sh` |
 | `docs/deploy/` | One guide per platform (VPS, Hostinger, DigitalOcean, Portainer, Coolify, Dokploy, Railway, Render, Fly.io, Kubernetes, LiveKit Cloud, Vercel) |
 | `.env.example` | Every environment variable with comments; `docs/configuration.md` is the reference |
