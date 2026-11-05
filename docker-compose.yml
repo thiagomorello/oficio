@@ -16,6 +16,10 @@
 #
 # Using LiveKit Cloud instead of the bundled SFU: remove the `livekit` service, set LIVEKIT_URL/LIVEKIT_INTERNAL_URL to
 # the wss:// URL of your project and paste its API key/secret. See docs/livekit.md.
+#
+# TURN for networks that block UDP and non-standard ports (opt-in): add the docker-compose.turn.yml overlay,
+#   docker compose -f docker-compose.yml -f docker-compose.turn.yml up -d
+# It reuses Caddy's certificate for $LIVEKIT_DOMAIN and publishes 5349/tcp + 3478/udp. See docs/livekit.md ("TURN").
 
 name: oficio
 
@@ -151,12 +155,19 @@ services:
     logging: *logging
 
 configs:
+  # The `$$` below escapes Compose interpolation, so Caddy receives its own environment placeholders (filled from the
+  # caddy service's `environment:`). With a single `$` Compose would render `{office.example.com}`, which Caddy
+  # rejects as a site address.
   caddyfile:
     content: |
       {
-        email {$ACME_EMAIL}
+        email {$$ACME_EMAIL}
+        # Issue only from Let's Encrypt, so the certificate files land in a predictable path inside the caddy-data
+        # volume (/data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/<domain>/). docker-compose.turn.yml
+        # relies on that path to hand the LIVEKIT_DOMAIN certificate to LiveKit's TURN server.
+        acme_ca https://acme-v02.api.letsencrypt.org/directory
       }
-      {$OFFICE_DOMAIN} {
+      {$$OFFICE_DOMAIN} {
         encode zstd gzip
         header {
           Strict-Transport-Security "max-age=31536000"
@@ -166,9 +177,11 @@ configs:
         }
         reverse_proxy app:4747
       }
-      {$LIVEKIT_DOMAIN} {
+      {$$LIVEKIT_DOMAIN} {
         reverse_proxy livekit:7880
       }
+  # docker-compose.turn.yml carries a copy of this config with a `turn:` block (Compose replaces, not merges, config
+  # `content`). When you change something here, change it there too.
   livekit_config:
     content: |
       port: 7880
@@ -179,7 +192,7 @@ configs:
         use_external_ip: true
         node_ip: ${LIVEKIT_NODE_IP:-}
       turn:
-        enabled: false
+        enabled: false   # docker-compose.turn.yml turns it on
       room:
         auto_create: true
         empty_timeout: 300

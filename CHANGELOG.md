@@ -7,12 +7,15 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 - `AGENTS.md` (and `CLAUDE.md`) with a production deployment runbook and coding rules for AI coding agents; README section explaining how to use it.
+- Opt-in TURN for the compose stack (#17): `docker-compose.turn.yml` enables LiveKit's embedded TURN server (TLS on 5349/tcp, UDP on 3478/udp) with the certificate Caddy already issues for `LIVEKIT_DOMAIN`, waits for that certificate on the first boot, and offers two ways to restart LiveKit after renewals: `scripts/turn-restart-on-renew.sh` for host cron or the `turn-cert-reloader` sidecar (`--profile turn-reloader`, Docker socket). New variables `TURN_TLS_PORT`, `TURN_UDP_PORT`, `TURN_CERT_WAIT_SECONDS`, `TURN_RELOADER_INTERVAL`; docs for ports, firewall, testing and limitations in both languages; CI validates the overlay.
 
 ### Changed
 - Dependencies: zod 4, cookie 2, ws 8.22.1, livekit-server-sdk 2.19.2, vite 8.3.5, vitest 5.1; Docker image and CI on Node 26 (Node 22 remains the minimum for source installs); GitHub Actions bumped to current majors.
+- `docker-compose.yml`: Caddy is pinned to Let's Encrypt (`acme_ca`) so the certificate files have a predictable path for the TURN overlay; the ZeroSSL fallback issuer is no longer used.
 
 ### Fixed
 - CI: the Docker smoke test now loads the built image into the daemon before running it.
+- `docker-compose.yml`: the Caddyfile placeholders `{$OFFICE_DOMAIN}`, `{$LIVEKIT_DOMAIN}` and `{$ACME_EMAIL}` were interpolated by Compose into `{office.example.com}`, which Caddy rejects as a site address (`subject does not qualify for certificate`). They are now escaped (`{$$VAR}`) so Caddy resolves them from its own environment.
 
 ## [0.1.0] - 2026-11-04
 

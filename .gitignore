@@ -8,6 +8,8 @@ dist/
 docker-compose.override.yml
 backups/
 qa-out/
+# state of scripts/turn-restart-on-renew.sh
+.turn-cert.mtime
 scripts/assets/.cache/
 
 # Editor/agent local config

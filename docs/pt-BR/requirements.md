@@ -56,10 +56,12 @@ Veja [Configuração](configuration.md) e [CONTRIBUTING.md](../../CONTRIBUTING.m
 | 7880 | TCP | LiveKit | não | Sinalização do LiveKit (HTTP/WebSocket). O Caddy faz proxy de `https://livekit.example.com` para ela |
 | 7881 | TCP | LiveKit | sim | ICE sobre TCP: fallback de mídia quando o UDP está bloqueado |
 | 7882 | UDP | LiveKit | sim | Toda a mídia WebRTC (áudio, vídeo, tela) em uma única porta UDP |
+| 5349 | TCP | LiveKit | opcional | TURN sobre TLS, só com o overlay `docker-compose.turn.yml` ([LiveKit → TURN](livekit.md#turn-quando-e-como)) |
+| 3478 | UDP | LiveKit | opcional | TURN sobre UDP, só com o overlay `docker-compose.turn.yml` |
 | 4747 | TCP | app | não | HTTP + WebSocket do app. Só o Caddy fala com ele |
 | 3306 | TCP | MySQL | não | Banco de dados. Nunca exponha |
 
-`7881` e `7882` são os padrões; altere-os com `LIVEKIT_TCP_PORT` / `LIVEKIT_UDP_PORT` no `.env`. Como alternativa a uma única porta UDP, o LiveKit pode usar uma faixa como `50000-60000/udp` (veja [`deploy/livekit/livekit.yaml`](../../deploy/livekit/livekit.yaml) e [LiveKit](livekit.md)); a porta única é mais simples de liberar no firewall e é o que o arquivo compose usa.
+`7881` e `7882` são os padrões; altere-os com `LIVEKIT_TCP_PORT` / `LIVEKIT_UDP_PORT` no `.env`. Como alternativa a uma única porta UDP, o LiveKit pode usar uma faixa como `50000-60000/udp` (veja [`deploy/livekit/livekit.yaml`](../../deploy/livekit/livekit.yaml) e [LiveKit](livekit.md)); a porta única é mais simples de liberar no firewall e é o que o arquivo compose usa. `5349` e `3478` (`TURN_TLS_PORT` / `TURN_UDP_PORT`) só importam quando você habilita o TURN.
 
 Um firewall mínimo com `ufw`:
 
@@ -73,11 +75,13 @@ sudo ufw allow 7882/udp
 sudo ufw enable
 ```
 
+Com o overlay de TURN, também `sudo ufw allow 5349/tcp` e `sudo ufw allow 3478/udp`.
+
 Provedores de nuvem costumam ter um segundo firewall no painel de controle (security groups); abra as mesmas portas lá.
 
 ### O que acontece quando o UDP está bloqueado
 
-O WebRTC prefere UDP. Se um participante está atrás de um firewall corporativo que descarta UDP, o navegador recorre a **ICE sobre TCP na porta 7881**. As chamadas continuam funcionando, mas com mais latência e mais jitter, porque o TCP retransmite pacotes perdidos em vez de pulá-los. Se uma rede bloqueia tudo exceto a 443, até o fallback TCP falha; esse é o único caso em que você precisa de um servidor TURN, que vem desabilitado por padrão. [LiveKit](livekit.md) explica quando e como habilitá-lo.
+O WebRTC prefere UDP. Se um participante está atrás de um firewall corporativo que descarta UDP, o navegador recorre a **ICE sobre TCP na porta 7881**. As chamadas continuam funcionando, mas com mais latência e mais jitter, porque o TCP retransmite pacotes perdidos em vez de pulá-los. Se a rede também bloqueia portas fora do padrão, até o fallback TCP falha; esse é o caso para um relay TURN sobre TLS, que vem desligado por padrão e pode ser ligado com o overlay `docker-compose.turn.yml` (5349/tcp + 3478/udp, certificado do Caddy). [LiveKit](livekit.md#turn-quando-e-como) explica quando e como.
 
 Presença e chat nunca dependem de UDP: eles viajam pelo WebSocket na 443.
 

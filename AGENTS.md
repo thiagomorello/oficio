@@ -117,6 +117,10 @@ the LiveKit API.
   restore into a scratch database before calling it done.
 - Firewall: only 22, 80, 443/tcp (+443/udp), 7881/tcp, 7882/udp from the internet. MySQL (3306) and the LiveKit
   API (7880) must stay on the internal Docker network. `docker-compose.yml` already does not publish them.
+- TURN (only if the human asks for it, for people on networks that block UDP and non-standard ports): add the
+  `docker-compose.turn.yml` overlay and open 5349/tcp + 3478/udp; it reuses Caddy's certificate. Pick a renewal
+  method with the human (host cron script or the `turn-reloader` profile, which needs the Docker socket). See
+  [docs/livekit.md](docs/livekit.md#turn-when-and-how).
 - Tell the human: the two URLs, the admin e-mail, where `.env` lives (and that it holds the secrets), how to
   upgrade ([docs/upgrading.md](docs/upgrading.md)) and how to roll back.
 

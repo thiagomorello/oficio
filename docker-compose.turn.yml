@@ -1,0 +1,128 @@
+# Oficio — opt-in TURN overlay for docker-compose.yml (docs/livekit.md, "TURN: when and how").
+#
+# Turns on LiveKit's embedded TURN server (TURN/TLS on 5349/tcp, TURN/UDP on 3478/udp) using the certificate Caddy
+# already obtains for $LIVEKIT_DOMAIN. No extra domain, certificate or ACME client is needed. For people on networks
+# that block UDP and every port except the usual ones, media is relayed through 5349/tcp with TLS.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.turn.yml up -d
+#   docker compose -f docker-compose.yml -f docker-compose.turn.yml --profile turn-reloader up -d   # + renewal sidecar
+#
+# Firewall: in addition to the base ports, open ${TURN_TLS_PORT:-5349}/tcp and ${TURN_UDP_PORT:-3478}/udp.
+# The host port and the container port are the same on purpose: LiveKit tells browsers which port to dial.
+#
+# First boot: the certificate does not exist until Caddy has issued it (DNS pointing here, port 80 reachable). The
+# `livekit` entrypoint below waits for the files before starting the server, so the overlay can be used from the
+# first `up`. Until then `docker compose ps` shows livekit as starting; `docker compose logs livekit` says why.
+#
+# Renewal: LiveKit does not reload a renewed certificate. Pick one:
+#   a) host cron calling scripts/turn-restart-on-renew.sh (no extra privileges, needs a crontab line), or
+#   b) the `turn-cert-reloader` sidecar (profile `turn-reloader`): checks the file every 6 h and restarts livekit.
+#      It mounts the Docker socket read-only, which is equivalent to root on the host; enable it only if you accept that.
+
+services:
+  livekit:
+    # Wrapper around the image entrypoint (/livekit-server): wait for Caddy's certificate, then exec the server.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        cert="$$TURN_CERT_FILE"; key="$$TURN_KEY_FILE"; limit="$${TURN_CERT_WAIT_SECONDS:-600}"; waited=0
+        until [ -f "$$cert" ] && [ -f "$$key" ]; do
+          if [ "$$waited" -ge "$$limit" ]; then
+            echo "[turn-cert-wait] no certificate for $$LIVEKIT_DOMAIN after $${waited}s ($$cert)." >&2
+            echo "[turn-cert-wait] check 'docker compose logs caddy': DNS must point to this host and port 80 must be reachable. Exiting; Docker restarts the wait." >&2
+            exit 1
+          fi
+          [ "$$((waited % 30))" -eq 0 ] && echo "[turn-cert-wait] waiting for Caddy to issue the certificate for $$LIVEKIT_DOMAIN ($${waited}s)"
+          sleep 5; waited=$$((waited + 5))
+        done
+        echo "[turn-cert-wait] certificate found, starting livekit-server with TURN"
+        exec /livekit-server "$$@"
+      - turn-cert-wait
+    command: ["--config", "/etc/livekit.yaml"]
+    environment:
+      LIVEKIT_DOMAIN: ${LIVEKIT_DOMAIN:?set LIVEKIT_DOMAIN in .env}
+      TURN_CERT_FILE: /caddy/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${LIVEKIT_DOMAIN}/${LIVEKIT_DOMAIN}.crt
+      TURN_KEY_FILE: /caddy/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${LIVEKIT_DOMAIN}/${LIVEKIT_DOMAIN}.key
+      TURN_CERT_WAIT_SECONDS: ${TURN_CERT_WAIT_SECONDS:-600}
+    volumes:
+      # Caddy's storage, read-only. Certificates live under /caddy/caddy/certificates/<issuer>/<domain>/.
+      - caddy-data:/caddy:ro
+    ports:
+      - "${TURN_TLS_PORT:-5349}:${TURN_TLS_PORT:-5349}/tcp"
+      - "${TURN_UDP_PORT:-3478}:${TURN_UDP_PORT:-3478}/udp"
+    healthcheck:
+      # The server only answers on 7880 after the certificate exists; give the first boot time.
+      start_period: 10m
+
+  # Optional (profile `turn-reloader`): restart livekit when Caddy renews the certificate.
+  # Alternative without a Docker socket in a container: scripts/turn-restart-on-renew.sh from host cron.
+  turn-cert-reloader:
+    image: docker:cli
+    profiles: [turn-reloader]
+    restart: unless-stopped
+    environment:
+      LIVEKIT_DOMAIN: ${LIVEKIT_DOMAIN:?set LIVEKIT_DOMAIN in .env}
+      TURN_CERT_FILE: /caddy/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${LIVEKIT_DOMAIN}/${LIVEKIT_DOMAIN}.crt
+      TURN_RELOADER_INTERVAL: ${TURN_RELOADER_INTERVAL:-21600}
+      DOCKER_CONFIG: /tmp/docker
+    volumes:
+      - caddy-data:/caddy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        project="$$(docker inspect --format '{{ index .Config.Labels "com.docker.compose.project" }}' "$$(hostname)")"
+        echo "[turn-cert-reloader] project=$$project; checking $$TURN_CERT_FILE every $${TURN_RELOADER_INTERVAL}s"
+        last=""
+        while :; do
+          if [ -f "$$TURN_CERT_FILE" ]; then
+            cur="$$(stat -c %Y "$$TURN_CERT_FILE")"
+            if [ -n "$$last" ] && [ "$$cur" != "$$last" ]; then
+              echo "[turn-cert-reloader] certificate for $$LIVEKIT_DOMAIN changed, restarting livekit"
+              ids="$$(docker ps -q --filter "label=com.docker.compose.project=$$project" --filter "label=com.docker.compose.service=livekit")"
+              if [ -n "$$ids" ]; then docker restart $$ids || echo "[turn-cert-reloader] restart failed" >&2; else echo "[turn-cert-reloader] no livekit container found" >&2; fi
+            fi
+            last="$$cur"
+          fi
+          sleep "$$TURN_RELOADER_INTERVAL"
+        done
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+configs:
+  # Same as `livekit_config` in docker-compose.yml plus the `turn:` block. Compose replaces (does not merge) the
+  # `content` of a config, so the two copies must be kept in sync by hand.
+  livekit_config:
+    content: |
+      port: 7880
+      rtc:
+        tcp_port: 7881
+        udp_port: 7882
+        # Discover the public IP via STUN (works behind Docker's NAT). Set LIVEKIT_NODE_IP in .env to pin it.
+        use_external_ip: true
+        node_ip: ${LIVEKIT_NODE_IP:-}
+      turn:
+        enabled: true
+        domain: ${LIVEKIT_DOMAIN}
+        tls_port: ${TURN_TLS_PORT:-5349}
+        udp_port: ${TURN_UDP_PORT:-3478}
+        # LiveKit terminates TLS itself with Caddy's certificate for LIVEKIT_DOMAIN (read-only mount of caddy-data).
+        external_tls: false
+        cert_file: /caddy/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${LIVEKIT_DOMAIN}/${LIVEKIT_DOMAIN}.crt
+        key_file: /caddy/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${LIVEKIT_DOMAIN}/${LIVEKIT_DOMAIN}.key
+      room:
+        auto_create: true
+        empty_timeout: 300
+        departure_timeout: 20
+      logging:
+        level: info
+        pion_level: error
