@@ -17,7 +17,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 - CI: the Docker smoke test now loads the built image into the daemon before running it.
-- `docker-compose.yml`: the Caddyfile placeholders `{$OFFICE_DOMAIN}`, `{$LIVEKIT_DOMAIN}` and `{$ACME_EMAIL}` were interpolated by Compose into `{office.example.com}`, which Caddy rejects as a site address (`subject does not qualify for certificate`). They are now escaped (`{$$VAR}`) so Caddy resolves them from its own environment.
+- `docker-compose.yml` and `deploy/portainer/stack.yml`: the Caddyfile placeholders `{$OFFICE_DOMAIN}`, `{$LIVEKIT_DOMAIN}` and `{$ACME_EMAIL}` were interpolated by Compose into `{office.example.com}`, which Caddy rejects as a site address (`subject does not qualify for certificate`). They are now escaped (`{$$VAR}`) so Caddy resolves them from its own environment.
 
 ## [0.1.0] - 2026-11-04
 
