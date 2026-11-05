@@ -85,7 +85,7 @@ Opcionais:
 | `OFFICE_LOGO_URL` | logo embutido | URL absoluta do seu logo |
 | `OFFICE_ACCENT_COLOR` | `#7c9cff` | `#rrggbb` |
 | `OFFICE_SIGN_TEXT` | nome do app | placa da recepção, máx. 14 caracteres |
-| `OFFICE_DEFAULT_LOCALE` | `en` | `en` ou `pt-BR` |
+| `OFFICE_DEFAULT_LOCALE` | `en` | `en`, `pt-BR` ou `es` |
 | `SENDGRID_API_KEY`, `MAIL_FROM` | vazio | e-mails de convite / redefinição |
 | `METRICS_TOKEN` | vazio (métricas agregadas públicas) | protege `/metrics` |
 | `TZ` | `UTC` | fuso horário dos containers |

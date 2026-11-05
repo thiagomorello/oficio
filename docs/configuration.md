@@ -31,7 +31,7 @@ Oficio is configured entirely through environment variables, read once at boot b
 | `OFFICE_LOGO_URL` | absolute URL or path starting with `/` | `/assets/brand/logo.svg` | no | Logo in the top bar, login and admin pages. Anything that is not `http(s)://…` or `/…` falls back to the default. |
 | `OFFICE_ACCENT_COLOR` | `#rrggbb` | `#7c9cff` | no | Accent color for buttons, highlights, the in-world sign and the e-mail header. Invalid values log a warning and use the default. |
 | `OFFICE_SIGN_TEXT` | string, max 14 chars | value of `OFFICE_APP_NAME` (truncated) | no | Text on the reception sign in the map. Rendered in an uppercase 5x7 pixel font; accents are stripped. |
-| `OFFICE_DEFAULT_LOCALE` | `en` \| `pt-BR` | `en` | no | Default language for visitors who have not chosen one, for server messages and for e-mails. Unknown values log a warning and use `en`. |
+| `OFFICE_DEFAULT_LOCALE` | `en` \| `pt-BR` \| `es` | `en` | no | Default language for visitors who have not chosen one, for server messages and for e-mails. Unknown values log a warning and use `en`. |
 
 Details and tips in [Branding](#branding-details) below.
 
@@ -156,7 +156,7 @@ Clients read these values from `GET /api/config` at load time, so a change plus 
 
 ## Language
 
-`OFFICE_DEFAULT_LOCALE` is the instance default, not a lock. Resolution order in the browser is: the person's saved choice (settings or the login-page selector, stored in `localStorage` and in the user profile) → the browser's `navigator.languages` → `OFFICE_DEFAULT_LOCALE`. The server picks the language of API error messages and e-mails from `?lang=` (used in e-mail links) → `Accept-Language` → the default. Supported values: `en`, `pt-BR`. Full explanation and how to add a language: [i18n](i18n.md).
+`OFFICE_DEFAULT_LOCALE` is the instance default, not a lock. Resolution order in the browser is: the person's saved choice (settings or the login-page selector, stored in `localStorage` and in the user profile) → the browser's `navigator.languages` → `OFFICE_DEFAULT_LOCALE`. The server picks the language of API error messages and e-mails from `?lang=` (used in e-mail links) → `Accept-Language` → the default. Supported values: `en`, `pt-BR`, `es`. Full explanation and how to add a language: [i18n](i18n.md).
 
 ## Full example `.env` for a VPS
 

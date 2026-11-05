@@ -186,7 +186,7 @@ Defina estas quatro linhas (todo o resto pode ficar como foi gerado):
 
 O arquivo de exemplo também contém `OFFICE_PUBLIC_URL=https://office.example.com`, `OFFICE_ALLOWED_HOSTS=office.example.com` e `LIVEKIT_URL=wss://livekit.example.com`. Atualize-os para os seus domínios reais ou apague as três linhas para que os padrões do compose (derivados de `OFFICE_DOMAIN` / `LIVEKIT_DOMAIN`) sejam aplicados. Deixar os valores de exemplo faria o app rejeitar requisições para o seu nome de host real.
 
-Marca opcional, também no `.env`: `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR` (`#rrggbb`), `OFFICE_SIGN_TEXT` (a placa na recepção, máximo de 14 caracteres), `OFFICE_DEFAULT_LOCALE` (`en` ou `pt-BR`). E-mail para convites e redefinições de senha: `SENDGRID_API_KEY` e `MAIL_FROM`; sem eles o painel de administração mostra as senhas temporárias na tela. Referência completa: [../configuration.md](../configuration.md).
+Marca opcional, também no `.env`: `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR` (`#rrggbb`), `OFFICE_SIGN_TEXT` (a placa na recepção, máximo de 14 caracteres), `OFFICE_DEFAULT_LOCALE` (`en`, `pt-BR` ou `es`). E-mail para convites e redefinições de senha: `SENDGRID_API_KEY` e `MAIL_FROM`; sem eles o painel de administração mostra as senhas temporárias na tela. Referência completa: [../configuration.md](../configuration.md).
 
 Salve com `Ctrl+O`, `Enter` e depois `Ctrl+X`.
 

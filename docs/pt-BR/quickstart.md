@@ -168,7 +168,7 @@ Peça que a pessoa abra o escritório em outro navegador enquanto você está ne
 ## 9. Deixe com a sua cara
 
 - **Nome, logo, cor, placa da recepção:** `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR`, `OFFICE_SIGN_TEXT` no `.env`, depois `docker compose up -d` para aplicar. Veja [Configuração → Marca](configuration.md#marca-whitelabel).
-- **Idioma:** `OFFICE_DEFAULT_LOCALE=en` ou `pt-BR`. Cada pessoa pode sobrescrever nas próprias configurações. Veja [i18n](i18n.md).
+- **Idioma:** `OFFICE_DEFAULT_LOCALE=en`, `pt-BR` ou `es`. Cada pessoa pode sobrescrever nas próprias configurações. Veja [i18n](i18n.md).
 - **Planta:** `https://office.example.com/admin/mapa` abre o editor de mapa. Desenhe pisos, paredes, salas e mesas, valide, publique. Veja [Guia do administrador → Editor de mapa](admin-guide.md#editor-de-mapa).
 - **E-mails:** adicione `SENDGRID_API_KEY` e `MAIL_FROM` para que convites e redefinições de senha saiam automaticamente.
 

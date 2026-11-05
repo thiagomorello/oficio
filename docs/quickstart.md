@@ -168,7 +168,7 @@ Ask them to open the office in another browser while you are in it. Walk up to e
 ## 9. Make it yours
 
 - **Name, logo, color, lobby sign:** `OFFICE_APP_NAME`, `OFFICE_LOGO_URL`, `OFFICE_ACCENT_COLOR`, `OFFICE_SIGN_TEXT` in `.env`, then `docker compose up -d` to apply. See [Configuration → Branding](configuration.md#branding-whitelabel).
-- **Language:** `OFFICE_DEFAULT_LOCALE=en` or `pt-BR`. Each person can override it in their settings. See [i18n](i18n.md).
+- **Language:** `OFFICE_DEFAULT_LOCALE=en`, `pt-BR` or `es`. Each person can override it in their settings. See [i18n](i18n.md).
 - **Floor plan:** `https://office.example.com/admin/mapa` opens the map editor. Draw floors, walls, rooms and desks, validate, publish. See [Admin guide → Map editor](admin-guide.md#map-editor).
 - **E-mails:** add `SENDGRID_API_KEY` and `MAIL_FROM` so invitations and password resets go out automatically.
 

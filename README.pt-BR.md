@@ -41,7 +41,7 @@ nome, logo e cores.
 - **Painel de administração.** Convide e gerencie usuários, redefina senhas, veja quem está online, painel de telemetria.
 - **Editor de mapa.** Desenhe o seu próprio escritório no navegador: pisos, paredes, móveis, salas, mesas; versões e publicação.
 - **Whitelabel.** Nome, logo, cor de destaque e a placa da recepção vêm de variáveis de ambiente.
-- **Dois idiomas.** Inglês e português do Brasil; cada pessoa escolhe o seu. Adicionar um idioma é um PR.
+- **Três idiomas.** Inglês, português do Brasil e espanhol; cada pessoa escolhe o seu. Adicionar um idioma é um PR.
 - **Amigável para operação.** Endpoint de health, métricas Prometheus, migrations aditivas, um único container quase stateless,
   imagem multi-arch (amd64/arm64).
 

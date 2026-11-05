@@ -44,8 +44,8 @@ Read `docs/architecture.md` for the big picture.
 ## Conventions
 
 - **TypeScript strict, ESM, no framework.** DOM is built with the `h()` helper (`client/src/ui/dom.ts`).
-- **User-visible text goes through i18n.** Add the key to the right file in `shared/i18n/messages/` in both `en`
-  and `pt-BR` (the type checker enforces parity) and call `t('area.key')`. Never hardcode a sentence in the UI or in
+- **User-visible text goes through i18n.** Add the key to the right file in `shared/i18n/messages/` in every
+  supported locale (`en`, `pt-BR`, `es`; the type checker enforces parity) and call `t('area.key')`. Never hardcode a sentence in the UI or in
   server responses. Logs and CLI output are plain English.
 - **Comments** may be in Portuguese or English; keep them useful.
 - **Tests** live next to the code (`*.test.ts`, Vitest). Pure logic should be testable in Node without a DOM.
